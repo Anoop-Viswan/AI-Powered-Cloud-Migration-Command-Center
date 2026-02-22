@@ -1,0 +1,11 @@
+pinecone
+python-dotenv
+pypdf
+python-docx
+openpyxl
+xlrd
+python-pptx
+pytest
+fastapi
+uvicorn[standard]
+openai

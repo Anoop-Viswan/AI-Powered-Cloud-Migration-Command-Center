@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Migration Assistant – AI-Powered CoE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-alt: #f6f8fa;
+      --bg-hero: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fef3c7 100%);
+      --surface: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #0d9488;
+      --accent-hover: #0f766e;
+      --accent-soft: rgba(13, 148, 136, 0.1);
+      --accent-light: #ccfbf1;
+      --purple: #7c3aed;
+      --purple-soft: rgba(124, 58, 237, 0.1);
+      --blue: #2563eb;
+      --blue-soft: rgba(37, 99, 235, 0.08);
+      --amber: #d97706;
+      --amber-soft: rgba(217, 119, 6, 0.1);
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+    .wrap-wide { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Nav */
+    nav {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.9);
+    }
+    nav .wrap { display: flex; align-items: center; justify-content: space-between; }
+    nav .logo { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--text); }
+    nav .logo span { color: var(--accent); }
+    nav a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    nav a:hover { color: var(--accent); }
+    nav .links { display: flex; gap: 1.5rem; }
+
+    /* Hero */
+    .hero {
+      padding: 3.5rem 0 4rem;
+      background: var(--bg-hero);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 60%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(13,148,136,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero .wrap { position: relative; z-index: 1; display: grid; gap: 2rem; align-items: center; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 768px) { .hero .wrap { grid-template-columns: 1fr; } }
+    .hero-text h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.85rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+    }
+    .hero-text h1 .highlight { color: var(--accent); }
+    .hero-text .tagline { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .hero-text .badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .hero-img {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 16/10;
+      object-fit: cover;
+    }
+    .hero-img-wrap { position: relative; }
+    .hero-img-wrap img { width: 100%; height: 100%; display: block; }
+
+    /* Sections */
+    section {
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    section:nth-child(even) { background: var(--bg-alt); }
+    section:last-of-type { border-bottom: 0; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 2.5vw, 1.65rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    p { color: var(--text-muted); margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+    ul { margin: 1rem 0 1rem 1.25rem; color: var(--text-muted); }
+    li { margin-bottom: 0.4rem; }
+
+    /* Module cards */
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .module {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .module:hover { box-shadow: var(--shadow); border-color: var(--accent-soft); }
+    .module-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .module:nth-child(1) .module-icon { background: var(--accent-soft); }
+    .module:nth-child(2) .module-icon { background: var(--purple-soft); }
+    .module:nth-child(3) .module-icon { background: var(--blue-soft); }
+    .module:nth-child(4) .module-icon { background: var(--amber-soft); }
+    .module:nth-child(5) .module-icon { background: var(--accent-soft); }
+    .module h3 { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .module p { margin-bottom: 0; font-size: 0.9rem; }
+
+    /* Diagram */
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin: 1.5rem 0;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+    /* Timeline – storytelling infographic */
+    .timeline-intro {
+      margin-bottom: 2rem;
+      max-width: 42ch;
+      color: var(--text-muted);
+    }
+    .timeline {
+      position: relative;
+      margin-top: 2rem;
+    }
+    .timeline-line {
+      position: absolute;
+      left: 1.5rem;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--purple) 50%, var(--blue) 75%, var(--amber) 100%);
+      border-radius: 3px;
+    }
+    @media (min-width: 769px) {
+      .timeline-line { left: 50%; transform: translateX(-50%); }
+    }
+    .timeline-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding-left: 3.5rem;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+    @media (min-width: 769px) {
+      .timeline-item {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        padding-left: 0;
+        align-items: center;
+      }
+      .timeline-item:nth-child(odd) .timeline-content { order: 1; text-align: right; padding-right: 2rem; }
+      .timeline-item:nth-child(odd) .timeline-meta { order: 2; padding-left: 2rem; }
+      .timeline-item:nth-child(even) .timeline-meta { padding-right: 2rem; }
+      .timeline-item:nth-child(even) .timeline-content { padding-left: 2rem; }
+    }
+    .timeline-dot {
+      position: absolute;
+      left: 0.65rem;
+      top: 0.25rem;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 3px solid var(--accent);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--accent);
+      z-index: 1;
+    }
+    .timeline-item:nth-child(1) .timeline-dot { border-color: var(--accent); color: var(--accent); }
+    .timeline-item:nth-child(2) .timeline-dot { border-color: var(--purple); color: var(--purple); }
+    .timeline-item:nth-child(3) .timeline-dot { border-color: var(--blue); color: var(--blue); }
+    .timeline-item:nth-child(4) .timeline-dot { border-color: var(--amber); color: var(--amber); }
+    @media (min-width: 769px) {
+      .timeline-dot { left: 50%; transform: translateX(-50%); }
+    }
+    .timeline-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .timeline-week {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .timeline-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .timeline-img {
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      aspect-ratio: 16/10;
+      max-height: 180px;
+      object-fit: cover;
+    }
+    .timeline-img-wrap { margin-top: 0.5rem; }
+    .timeline-content p {
+      font-size: 0.95rem;
+      margin-bottom: 0;
+      color: var(--text-muted);
+    }
+    .timeline-content .outcome {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: var(--bg-alt);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text);
+      border-left: 3px solid var(--accent);
+    }
+    .timeline-item:nth-child(odd) .timeline-content .outcome { border-left: 0; border-right: 3px solid var(--accent); }
+
+    /* Footer */
+    footer {
+      padding: 2.5rem 0;
+      text-align: center;
+      background: var(--bg-alt);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+    }
+    footer p { margin-bottom: 0.35rem; }
+    footer .attribution { font-size: 0.75rem; opacity: 0.8; margin-top: 0.75rem; }
+    a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    a:hover { text-decoration: underline; color: var(--accent-hover); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <span class="logo">Migration Assistant<span> · CoE</span></span>
+      <div class="links">
+        <a href="#overview">Overview</a>
+        <a href="#modules">Modules</a>
+        <a href="#design">Design</a>
+        <a href="#timeline">Timeline</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+        <span class="badge">AI-Powered CoE</span>
+        <h1>Build a <span class="highlight">Migration Assistant</span> that scales with your team</h1>
+        <p class="tagline">Assess, plan, and execute application migrations with a vector-backed Knowledge Base, multi-agent assessment, and optional LLM summarization—all in one place.</p>
+      </div>
+      <div class="hero-img-wrap">
+        <img
+          class="hero-img"
+          src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80"
+          alt="Team collaboration and planning"
+          width="800"
+          height="500"
+        />
+      </div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <div class="wrap">
+      <span class="section-label">Overview</span>
+      <h2>One assistant for the whole migration journey</h2>
+      <p>
+        This project delivers an AI-powered Migration Assistant that helps teams assess, plan, and execute application migrations. It combines a vector-backed Knowledge Base (KB) with optional LLM summarization, a multi-agent Assessment flow for data collection and report creation, and a phased roadmap from ideation to production.
+      </p>
+      <p>
+        The assistant supports migration practitioners and CoE teams with semantic search over migration artifacts, chat over the KB, and structured workflows for assessment and planning.
+      </p>
+    </div>
+  </section>
+
+  <section id="modules">
+    <div class="wrap">
+      <span class="section-label">Modules</span>
+      <h2>What’s inside</h2>
+      <p>The system is organized into the following modules:</p>
+      <div class="modules">
+        <div class="module">
+          <div class="module-icon">📚</div>
+          <h3>Knowledge Base (KB)</h3>
+          <p>Vector-backed semantic search over migration documents (PDF, DOCX, XLSX, CSV, PPTX, and text). Chat with optional LLM summarization and admin controls for indexing and configuration.</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">🔍</div>
+          <h3>Assessment</h3>
+          <p>Multi-agent system for application assessment: data collection, summarization, and report creation. Structured inputs and assessment artifacts.</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">📋</div>
+          <h3>Planning</h3>
+          <p>Data collection and planning workflows: timelines, dependencies, and work breakdown structures (WBS) or project plans.</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">🚀</div>
+          <h3>Migration Implementation</h3>
+          <p>Guided implementation checklists and runbooks (placeholder for future expansion).</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">🛟</div>
+          <h3>Support</h3>
+          <p>Post-migration support and handover artifacts (placeholder for future expansion).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="design">
+    <div class="wrap">
+      <span class="section-label">Design</span>
+      <h2>How it works</h2>
+      <p><strong>Knowledge Base:</strong> The KB is built on a Vector DB (Pinecone) with integrated embeddings. User queries are run against the index; optionally, retrieved chunks are sent to an LLM for summarization into a single answer (RAG).</p>
+      <div class="diagram" aria-label="KB design: Vector DB and LLM summarization">
+        <svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <path d="M0 0 L10 3 L0 6 Z" fill="#6b7280" />
+            </marker>
+          </defs>
+          <rect x="20" y="70" width="100" height="56" rx="6" stroke="#e5e7eb" stroke-width="1.5" fill="#f6f8fa" />
+          <text x="70" y="102" text-anchor="middle" fill="#1f2937" font-size="12" font-family="system-ui">Documents</text>
+          <text x="70" y="116" text-anchor="middle" fill="#6b7280" font-size="10">PDF, DOCX, etc.</text>
+          <path d="M 140 98 L 220 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
+          <rect x="230" y="50" width="120" height="96" rx="8" stroke="#0d9488" stroke-width="1.5" fill="rgba(13,148,136,0.08)" />
+          <text x="290" y="82" text-anchor="middle" fill="#0d9488" font-size="13" font-weight="600">Vector DB</text>
+          <text x="290" y="100" text-anchor="middle" fill="#6b7280" font-size="11">(Pinecone)</text>
+          <text x="290" y="118" text-anchor="middle" fill="#6b7280" font-size="10">Embeddings</text>
+          <text x="290" y="132" text-anchor="middle" fill="#6b7280" font-size="10">+ Index</text>
+          <path d="M 360 98 L 420 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
+          <rect x="430" y="70" width="90" height="56" rx="6" stroke="#e5e7eb" stroke-width="1.5" fill="#f6f8fa" />
+          <text x="475" y="98" text-anchor="middle" fill="#1f2937" font-size="12">Search</text>
+          <text x="475" y="114" text-anchor="middle" fill="#6b7280" font-size="10">Query → Hits</text>
+          <path d="M 530 98 L 590 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
+          <rect x="500" y="160" width="180" height="48" rx="6" stroke="#7c3aed" stroke-width="1.5" fill="rgba(124,58,237,0.08)" />
+          <text x="590" y="182" text-anchor="middle" fill="#7c3aed" font-size="12" font-weight="600">LLM Summarization</text>
+          <text x="590" y="198" text-anchor="middle" fill="#6b7280" font-size="10">(optional) Answer</text>
+          <path d="M 475 126 L 550 160" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrow)" />
+          <text x="505" y="148" fill="#6b7280" font-size="9">chunks</text>
+        </svg>
+      </div>
+      <p><strong>Assessment:</strong> The Assessment module is designed as a multi-agent system: agents coordinate for data collection (e.g. application profile, tech stack), summarization of inputs, and report creation (e.g. assessment reports). This keeps the flow structured and scalable.</p>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <div class="wrap-wide">
+      <span class="section-label">Roadmap</span>
+      <h2>Project timeline &amp; story</h2>
+      <p class="timeline-intro">A four-weekend journey from ideation to a production-ready Migration Assistant—each phase builds on the last with clear outcomes.</p>
+
+      <div class="timeline">
+        <div class="timeline-line" aria-hidden="true"></div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">1</div>
+          <div class="timeline-meta">
+            <span class="timeline-week">Weekend 1</span>
+            <h3 class="timeline-title">Ideation, design &amp; Knowledge Base</h3>
+            <div class="timeline-img-wrap">
+              <img class="timeline-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80" alt="Planning and design" width="600" height="340" />
+            </div>
+          </div>
+          <div class="timeline-content">
+            <p>We started with a clear goal: give migration teams one place to search and chat over their documents. Initial ideation and design led to implementing the Knowledge Base—vector index, document ingestion (PDF, DOCX, XLSX, CSV, PPTX), semantic search, and basic chat with optional LLM summarization.</p>
+            <div class="outcome"><strong>Outcome:</strong> Working KB with Pinecone, embeddings, and RAG-ready chat.</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">2</div>
+          <div class="timeline-meta">
+            <span class="timeline-week">Weekend 2</span>
+            <h3 class="timeline-title">Assessment multi-agent RAG</h3>
+            <div class="timeline-img-wrap">
+              <img class="timeline-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data and analytics" width="600" height="340" />
+            </div>
+          </div>
+          <div class="timeline-content">
+            <p>With the KB in place, we turned assessment into a multi-agent RAG flow: data collection agents, summarization over the KB, and report generation (e.g. assessment reports) from structured inputs. This keeps the flow scalable and consistent.</p>
+            <div class="outcome"><strong>Outcome:</strong> Multi-agent assessment pipeline with report generation.</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">3</div>
+          <div class="timeline-meta">
+            <span class="timeline-week">Weekend 3</span>
+            <h3 class="timeline-title">PoC to production</h3>
+            <div class="timeline-img-wrap">
+              <img class="timeline-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80" alt="Development and deployment" width="600" height="340" />
+            </div>
+          </div>
+          <div class="timeline-content">
+            <p>We hardened the system for production: guardrails, security, scalability, deployment, Dockerization, and observability (logging, metrics, alerts). The assistant moved from “it works on my machine” to “ready for teams.”</p>
+            <div class="outcome"><strong>Outcome:</strong> Production-ready deployment and observability.</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">4</div>
+          <div class="timeline-meta">
+            <span class="timeline-week">Weekend 4</span>
+            <h3 class="timeline-title">Functionality &amp; enhancements</h3>
+            <div class="timeline-img-wrap">
+              <img class="timeline-img" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Collaboration and growth" width="600" height="340" />
+            </div>
+          </div>
+          <div class="timeline-content">
+            <p>We added polish and extensions: planning module improvements, migration implementation and support placeholders, UX refinements, and documentation. The result is a cohesive CoE assistant you can extend further.</p>
+            <div class="outcome"><strong>Outcome:</strong> Full CoE assistant with docs and UX polish.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>Migration Assistant</strong> · Center of Excellence · Vector KB + LLM</p>
+      <p><a href="https://github.com">Repository</a></p>
+      <p class="attribution">Hero and timeline images from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a> (free to use).</p>
+    </div>
+  </footer>
+</body>
+</html>

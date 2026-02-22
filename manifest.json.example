@@ -1,0 +1,17 @@
+{
+  "FinanceApp": {
+    "technology": "Python, React, PostgreSQL",
+    "tools": "Docker, AWS, GitHub Actions",
+    "description": "Internal finance and reporting dashboard",
+    "owner": "Finance Tech"
+  },
+  "MyService": {
+    "technology": "Go, gRPC, Redis",
+    "tools": "Kubernetes, Terraform, Datadog",
+    "description": "Core API service for orders",
+    "owner": "Backend Team"
+  },
+  "default": {
+    "description": "Documents at project root (no app folder)"
+  }
+}

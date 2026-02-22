@@ -1,0 +1,9 @@
+venv/
+.venv/
+env/
+.env
+.pinecone_usage.json
+.seed_status.json
+__pycache__/
+*.pyc
+*.pyo
