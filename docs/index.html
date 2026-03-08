@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Migration Assistant – AI-Powered CoE</title>
+  <title>Cloud Migration Command Center – AI-Powered CoE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
@@ -187,55 +187,47 @@
     }
     .diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
 
-    /* Timeline – storytelling infographic */
+    /* Timeline – storytelling infographic (single-column card layout for clean alignment) */
     .timeline-intro {
       margin-bottom: 2rem;
-      max-width: 42ch;
+      max-width: 52ch;
       color: var(--text-muted);
     }
     .timeline {
       position: relative;
       margin-top: 2rem;
+      padding-left: 2.5rem;
+    }
+    @media (min-width: 769px) {
+      .timeline { padding-left: 0; }
     }
     .timeline-line {
       position: absolute;
-      left: 1.5rem;
-      top: 0;
-      bottom: 0;
+      left: 0.75rem;
+      top: 0.5rem;
+      bottom: 0.5rem;
       width: 3px;
       background: linear-gradient(180deg, var(--accent) 0%, var(--purple) 50%, var(--blue) 75%, var(--amber) 100%);
       border-radius: 3px;
     }
     @media (min-width: 769px) {
-      .timeline-line { left: 50%; transform: translateX(-50%); }
+      .timeline-line { left: 1.5rem; }
     }
     .timeline-item {
       position: relative;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-      padding-left: 3.5rem;
+      margin-bottom: 2rem;
+      padding-left: 2rem;
+    }
+    @media (min-width: 769px) {
+      .timeline-item { padding-left: 3rem; }
     }
     .timeline-item:last-child { margin-bottom: 0; }
-    @media (min-width: 769px) {
-      .timeline-item {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        padding-left: 0;
-        align-items: center;
-      }
-      .timeline-item:nth-child(odd) .timeline-content { order: 1; text-align: right; padding-right: 2rem; }
-      .timeline-item:nth-child(odd) .timeline-meta { order: 2; padding-left: 2rem; }
-      .timeline-item:nth-child(even) .timeline-meta { padding-right: 2rem; }
-      .timeline-item:nth-child(even) .timeline-content { padding-left: 2rem; }
-    }
     .timeline-dot {
       position: absolute;
-      left: 0.65rem;
-      top: 0.25rem;
-      width: 2rem;
-      height: 2rem;
+      left: 0;
+      top: 0.15rem;
+      width: 1.75rem;
+      height: 1.75rem;
       border-radius: 50%;
       background: var(--surface);
       border: 3px solid var(--accent);
@@ -244,7 +236,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--accent);
       z-index: 1;
     }
@@ -252,13 +244,31 @@
     .timeline-item:nth-child(2) .timeline-dot { border-color: var(--purple); color: var(--purple); }
     .timeline-item:nth-child(3) .timeline-dot { border-color: var(--blue); color: var(--blue); }
     .timeline-item:nth-child(4) .timeline-dot { border-color: var(--amber); color: var(--amber); }
-    @media (min-width: 769px) {
-      .timeline-dot { left: 50%; transform: translateX(-50%); }
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      padding: 1.25rem;
     }
-    .timeline-meta {
+    @media (min-width: 769px) {
+      .timeline-card { padding: 1.5rem; }
+    }
+    .timeline-card-inner {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 1rem;
+    }
+    @media (min-width: 769px) {
+      .timeline-card-inner { flex-direction: row; align-items: flex-start; gap: 1.5rem; }
+    }
+    .timeline-meta {
+      flex-shrink: 0;
+      min-width: 0;
+    }
+    @media (min-width: 769px) {
+      .timeline-meta { width: 220px; }
     }
     .timeline-week {
       font-size: 0.75rem;
@@ -266,38 +276,45 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--text-muted);
+      margin-bottom: 0.25rem;
     }
     .timeline-title {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--text);
-      line-height: 1.3;
+      line-height: 1.35;
+      margin-bottom: 0.5rem;
     }
     .timeline-img {
-      border-radius: var(--radius);
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm);
+      width: 100%;
       aspect-ratio: 16/10;
-      max-height: 180px;
       object-fit: cover;
     }
-    .timeline-img-wrap { margin-top: 0.5rem; }
+    .timeline-img-wrap { margin-top: 0.25rem; }
+    .timeline-content {
+      flex: 1;
+      min-width: 0;
+      padding: 0 0.25rem 0 0;
+    }
     .timeline-content p {
       font-size: 0.95rem;
-      margin-bottom: 0;
+      margin-bottom: 0.75rem;
       color: var(--text-muted);
+      line-height: 1.6;
     }
     .timeline-content .outcome {
-      margin-top: 0.75rem;
-      padding: 0.6rem 0.9rem;
+      margin-top: 0;
+      padding: 0.65rem 1rem;
       background: var(--bg-alt);
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       color: var(--text);
       border-left: 3px solid var(--accent);
     }
-    .timeline-item:nth-child(odd) .timeline-content .outcome { border-left: 0; border-right: 3px solid var(--accent); }
 
     /* Footer */
     footer {
@@ -312,17 +329,53 @@
     footer .attribution { font-size: 0.75rem; opacity: 0.8; margin-top: 0.75rem; }
     a { color: var(--accent); text-decoration: none; font-weight: 500; }
     a:hover { text-decoration: underline; color: var(--accent-hover); }
+
+    /* Tools used */
+    .tools-grid {
+      display: grid;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .tool-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+    .tool-card .role { font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem; }
+    .tool-card p { font-size: 0.9rem; margin-bottom: 0; }
+
+    /* Lessons learnt */
+    .lessons-list { margin-top: 1.25rem; }
+    .lesson-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--accent);
+    }
+    .lesson-item:last-child { margin-bottom: 0; }
+    .lesson-item h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .lesson-item p { font-size: 0.9rem; margin-bottom: 0; }
+    .lesson-item code { background: var(--bg-alt); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
   </style>
 </head>
 <body>
   <nav>
     <div class="wrap">
-      <span class="logo">Migration Assistant<span> · CoE</span></span>
+      <span class="logo">Migration Command Center<span> · CoE</span></span>
       <div class="links">
         <a href="#overview">Overview</a>
         <a href="#modules">Modules</a>
         <a href="#design">Design</a>
         <a href="#timeline">Timeline</a>
+        <a href="#tools">Tools</a>
+        <a href="#lessons">Lessons</a>
       </div>
     </div>
   </nav>
@@ -331,8 +384,8 @@
     <div class="wrap">
       <div class="hero-text">
         <span class="badge">AI-Powered CoE</span>
-        <h1>Build a <span class="highlight">Migration Assistant</span> that scales with your team</h1>
-        <p class="tagline">Assess, plan, and execute application migrations with a vector-backed Knowledge Base, multi-agent assessment, and optional LLM summarization—all in one place.</p>
+        <h1>Build a <span class="highlight">Cloud Migration Command Center</span></h1>
+        <p class="tagline">Single pane of glass to streamline all your cloud migration tasks—assessment, planning, and execution with a vector-backed Knowledge Base and optional LLM summarization.</p>
       </div>
       <div class="hero-img-wrap">
         <img
@@ -351,7 +404,7 @@
       <span class="section-label">Overview</span>
       <h2>One assistant for the whole migration journey</h2>
       <p>
-        This project delivers an AI-powered Migration Assistant that helps teams assess, plan, and execute application migrations. It combines a vector-backed Knowledge Base (KB) with optional LLM summarization, a multi-agent Assessment flow for data collection and report creation, and a phased roadmap from ideation to production.
+        This project delivers an AI-powered Migration Assistant that helps teams assess, plan, and execute application migrations. It uses a <strong>two-role flow</strong>: Application Users submit migration requests (app profile data); Admins run research, generate and edit reports, and download. It combines a vector-backed Knowledge Base (KB) with optional LLM summarization and a phased roadmap from ideation to production.
       </p>
       <p>
         The assistant supports migration practitioners and CoE teams with semantic search over migration artifacts, chat over the KB, and structured workflows for assessment and planning.
@@ -372,8 +425,8 @@
         </div>
         <div class="module">
           <div class="module-icon">🔍</div>
-          <h3>Assessment</h3>
-          <p>Multi-agent system for application assessment: data collection, summarization, and report creation. Structured inputs and assessment artifacts.</p>
+          <h3>Assessment (Migration Request)</h3>
+          <p>Two-role flow: Application Users submit app profile (data collection, validation); Admins run research (KB + optional web), generate and edit reports, and download. Multi-agent system for research and summarization.</p>
         </div>
         <div class="module">
           <div class="module-icon">📋</div>
@@ -398,6 +451,7 @@
     <div class="wrap">
       <span class="section-label">Design</span>
       <h2>How it works</h2>
+      <p><a href="ARCHITECTURE_DESIGN.html" style="color: var(--accent); font-weight: 600;">Architecture & Design (umbrella)</a> – Single entry point for all design docs: decision matrix, wireframes, assessment design, admin design, deployment.</p>
       <p><strong>Knowledge Base:</strong> The KB is built on a Vector DB (Pinecone) with integrated embeddings. User queries are run against the index; optionally, retrieved chunks are sent to an LLM for summarization into a single answer (RAG).</p>
       <div class="diagram" aria-label="KB design: Vector DB and LLM summarization">
         <svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -427,7 +481,7 @@
           <text x="505" y="148" fill="#6b7280" font-size="9">chunks</text>
         </svg>
       </div>
-      <p><strong>Assessment:</strong> The Assessment module is designed as a multi-agent system: agents coordinate for data collection (e.g. application profile, tech stack), summarization of inputs, and report creation (e.g. assessment reports). This keeps the flow structured and scalable.</p>
+      <p><strong>Assessment (Migration Request):</strong> Two roles: Application Users fill the profile and submit for assessment (no research or report); Admins view submissions, run research (KB + optional manual input), generate reports, edit/enhance, and download. Multi-agent system (Research Agent, Summarizer) runs in the Admin flow only.</p>
     </div>
   </section>
 
@@ -442,62 +496,120 @@
 
         <div class="timeline-item">
           <div class="timeline-dot">1</div>
-          <div class="timeline-meta">
-            <span class="timeline-week">Weekend 1</span>
-            <h3 class="timeline-title">Ideation, design &amp; Knowledge Base</h3>
-            <div class="timeline-img-wrap">
-              <img class="timeline-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80" alt="Planning and design" width="600" height="340" />
+          <div class="timeline-card">
+            <div class="timeline-card-inner">
+              <div class="timeline-meta">
+                <span class="timeline-week">Weekend 1</span>
+                <h3 class="timeline-title">Ideation, design &amp; Knowledge Base</h3>
+                <div class="timeline-img-wrap">
+                  <img class="timeline-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80" alt="Planning and design" width="600" height="340" />
+                </div>
+              </div>
+              <div class="timeline-content">
+                <p>We started with a clear goal: give migration teams one place to search and chat over their documents. Initial ideation and design led to implementing the Knowledge Base—vector index, document ingestion (PDF, DOCX, XLSX, CSV, PPTX), semantic search, and basic chat with optional LLM summarization.</p>
+                <div class="outcome"><strong>Outcome:</strong> Working KB with Pinecone, embeddings, and RAG-ready chat.</div>
+              </div>
             </div>
-          </div>
-          <div class="timeline-content">
-            <p>We started with a clear goal: give migration teams one place to search and chat over their documents. Initial ideation and design led to implementing the Knowledge Base—vector index, document ingestion (PDF, DOCX, XLSX, CSV, PPTX), semantic search, and basic chat with optional LLM summarization.</p>
-            <div class="outcome"><strong>Outcome:</strong> Working KB with Pinecone, embeddings, and RAG-ready chat.</div>
           </div>
         </div>
 
         <div class="timeline-item">
           <div class="timeline-dot">2</div>
-          <div class="timeline-meta">
-            <span class="timeline-week">Weekend 2</span>
-            <h3 class="timeline-title">Assessment multi-agent RAG</h3>
-            <div class="timeline-img-wrap">
-              <img class="timeline-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data and analytics" width="600" height="340" />
+          <div class="timeline-card">
+            <div class="timeline-card-inner">
+              <div class="timeline-meta">
+                <span class="timeline-week">Weekend 2</span>
+                <h3 class="timeline-title">Assessment multi-agent RAG</h3>
+                <div class="timeline-img-wrap">
+                  <img class="timeline-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data and analytics" width="600" height="340" />
+                </div>
+              </div>
+              <div class="timeline-content">
+                <p>With the KB in place, assessment uses a two-role flow: Application Users submit migration requests (profile); Admins run multi-agent RAG (research over KB, summarization, report generation), edit reports, and download. This keeps the flow scalable and separates request intake from CoE execution.</p>
+                <div class="outcome"><strong>Outcome:</strong> Two-role migration request flow with Admin-driven research and report generation.</div>
+              </div>
             </div>
-          </div>
-          <div class="timeline-content">
-            <p>With the KB in place, we turned assessment into a multi-agent RAG flow: data collection agents, summarization over the KB, and report generation (e.g. assessment reports) from structured inputs. This keeps the flow scalable and consistent.</p>
-            <div class="outcome"><strong>Outcome:</strong> Multi-agent assessment pipeline with report generation.</div>
           </div>
         </div>
 
         <div class="timeline-item">
           <div class="timeline-dot">3</div>
-          <div class="timeline-meta">
-            <span class="timeline-week">Weekend 3</span>
-            <h3 class="timeline-title">PoC to production</h3>
-            <div class="timeline-img-wrap">
-              <img class="timeline-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80" alt="Development and deployment" width="600" height="340" />
+          <div class="timeline-card">
+            <div class="timeline-card-inner">
+              <div class="timeline-meta">
+                <span class="timeline-week">Weekend 3</span>
+                <h3 class="timeline-title">PoC to production</h3>
+                <div class="timeline-img-wrap">
+                  <img class="timeline-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80" alt="Development and deployment" width="600" height="340" />
+                </div>
+              </div>
+              <div class="timeline-content">
+                <p>We hardened the system for production: guardrails, security, scalability, deployment, Dockerization, and observability (logging, metrics, alerts). The assistant moved from “it works on my machine” to “ready for teams.”</p>
+                <div class="outcome"><strong>Outcome:</strong> Production-ready deployment and observability.</div>
+              </div>
             </div>
-          </div>
-          <div class="timeline-content">
-            <p>We hardened the system for production: guardrails, security, scalability, deployment, Dockerization, and observability (logging, metrics, alerts). The assistant moved from “it works on my machine” to “ready for teams.”</p>
-            <div class="outcome"><strong>Outcome:</strong> Production-ready deployment and observability.</div>
           </div>
         </div>
 
         <div class="timeline-item">
           <div class="timeline-dot">4</div>
-          <div class="timeline-meta">
-            <span class="timeline-week">Weekend 4</span>
-            <h3 class="timeline-title">Functionality &amp; enhancements</h3>
-            <div class="timeline-img-wrap">
-              <img class="timeline-img" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Collaboration and growth" width="600" height="340" />
+          <div class="timeline-card">
+            <div class="timeline-card-inner">
+              <div class="timeline-meta">
+                <span class="timeline-week">Weekend 4</span>
+                <h3 class="timeline-title">Functionality &amp; enhancements</h3>
+                <div class="timeline-img-wrap">
+                  <img class="timeline-img" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Collaboration and growth" width="600" height="340" />
+                </div>
+              </div>
+              <div class="timeline-content">
+                <p>We added polish and extensions: planning module improvements, migration implementation and support placeholders, UX refinements, and documentation. The result is a cohesive CoE assistant you can extend further.</p>
+                <div class="outcome"><strong>Outcome:</strong> Full CoE assistant with docs and UX polish.</div>
+              </div>
             </div>
           </div>
-          <div class="timeline-content">
-            <p>We added polish and extensions: planning module improvements, migration implementation and support placeholders, UX refinements, and documentation. The result is a cohesive CoE assistant you can extend further.</p>
-            <div class="outcome"><strong>Outcome:</strong> Full CoE assistant with docs and UX polish.</div>
-          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools">
+    <div class="wrap">
+      <span class="section-label">Tools used</span>
+      <h2>How we built it</h2>
+      <p>Key tools that powered research, design, and development of the Migration Command Center.</p>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="role">Research &amp; consultant</div>
+          <h3>Perplexity</h3>
+          <p>Used as the overall research and consulting assistant for architecture decisions, best practices, and troubleshooting during development.</p>
+        </div>
+        <div class="tool-card">
+          <div class="role">Pair programmer</div>
+          <h3>Cursor</h3>
+          <p>AI-powered pair programmer for writing and refactoring code, navigating the codebase, and implementing features efficiently.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lessons">
+    <div class="wrap">
+      <span class="section-label">Lessons learnt</span>
+      <h2>Challenges and how we fixed them</h2>
+      <p>Issues we faced during development and the approaches that worked.</p>
+      <div class="lessons-list">
+        <div class="lesson-item">
+          <h3>Start small: local first, then scale</h3>
+          <p>We focused on local deployment and a working end-to-end flow before scaling to cloud deployments and packaging. This avoided big-bang complexity and made it easier to debug and iterate. Moving to Docker and production came only after the core KB, search, and chat were stable.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>PDF and DOCX aren’t supported by default</h3>
+          <p>Vector indexes and embedding APIs work on text; PDF and Word (.docx) are binary formats, so they can’t be indexed without extraction. We added a <strong>document extractor</strong> layer that uses appropriate libraries (e.g. PyMuPDF for PDF, python-docx for DOCX) to pull out plain text (and structure where useful) before chunking and embedding. That way all project documents can be ingested into the Knowledge Base.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Field mapping (text vs content) and re-indexing token issues</h3>
+          <p>We hit mismatches between the field names used when indexing (e.g. <code>text</code> or <code>content</code>) and what the search/rerank pipeline expected, which led to empty or wrong results. We fixed it by standardizing on a single field (e.g. <code>content</code>) for the body text and ensuring the frontend and backend both read that field. Re-indexing then surfaced <strong>token limit errors</strong> with the reranker (e.g. bge-reranker has a max input length); we added a fallback that retries search without rerank when the reranker fails due to token limits, so long chunks don’t break the flow.</p>
         </div>
       </div>
     </div>
@@ -505,7 +617,7 @@
 
   <footer>
     <div class="wrap">
-      <p><strong>Migration Assistant</strong> · Center of Excellence · Vector KB + LLM</p>
+      <p><strong>Cloud Migration Command Center</strong> · Center of Excellence · Vector KB + LLM</p>
       <p><a href="https://github.com">Repository</a></p>
       <p class="attribution">Hero and timeline images from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a> (free to use).</p>
     </div>

@@ -2,8 +2,10 @@ venv/
 .venv/
 env/
 .env
+.DS_Store
 .pinecone_usage.json
 .seed_status.json
 __pycache__/
 *.pyc
 *.pyo
+data/

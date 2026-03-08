@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Chat from './pages/Chat'
 import Admin from './pages/Admin'
+import Assessment from './pages/Assessment'
 
 function NavLink({ to, children }) {
   const loc = useLocation()
@@ -28,6 +29,7 @@ export default function App() {
           </Link>
           <nav className="flex items-center gap-2">
             <NavLink to="/">Home</NavLink>
+            <NavLink to="/assessment">Assessment</NavLink>
             <NavLink to="/chat">Ask the KB</NavLink>
             <NavLink to="/admin">Admin</NavLink>
           </nav>
@@ -36,6 +38,8 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/assessment" element={<Assessment />} />
+          <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Command Center – Design Spec</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.5/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #4a5568;
+      --accent: #0d9488;
+      --accent-soft: rgba(13, 148, 136, 0.08);
+      --border: #e2e8f0;
+      --surface: #f8fafc;
+      --font: 'Inter', system-ui, sans-serif;
+      --font-head: 'IBM Plex Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); line-height: 1.6; font-size: 15px; background: var(--bg); }
+    .doc { max-width: 900px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+    @media print { .doc { max-width: 100%; padding: 1rem; } .no-print { display: none !important; } }
+    .cover { text-align: center; padding: 3rem 0 4rem; border-bottom: 2px solid var(--accent); }
+    .cover h1 { font-family: var(--font-head); font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+    .cover .subtitle { color: var(--text-muted); font-size: 1rem; }
+    .cover .meta { margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted); }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; margin: 2rem 0; }
+    .toc h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .toc ul { list-style: none; }
+    .toc li { margin: 0.4rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    h2 { font-family: var(--font-head); font-size: 1.35rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text); }
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 0.6rem 0.9rem; text-align: left; }
+    th { background: var(--surface); font-weight: 600; color: var(--text); }
+    td { color: var(--text-muted); }
+    .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+    .diagram-wrap .mermaid { display: flex; justify-content: center; }
+    .diagram-caption { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; text-align: center; }
+    .callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+    .callout p { margin-bottom: 0; }
+    pre, code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.85em; }
+    pre { padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+    code { padding: 0.15rem 0.4rem; }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <p class="no-print" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Open in a browser to view. Diagrams render via Mermaid.js. Print-friendly.</p>
+    <header class="cover">
+      <h1>Admin Command Center</h1>
+      <p class="subtitle">Design Spec</p>
+      <p class="meta">Two-tab dashboard: Assessments | Diagnostics · Design for review</p>
+    </header>
+
+    <nav class="toc no-print">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="#purpose">1. Purpose</a></li>
+        <li><a href="#tabs">2. Two-tab structure</a></li>
+        <li><a href="#tab1">3. Tab 1: Assessments</a></li>
+        <li><a href="#tab2">4. Tab 2: Diagnostics</a></li>
+        <li><a href="#data">5. Data sources</a></li>
+        <li><a href="#api">6. API additions</a></li>
+        <li><a href="#access">7. Access control</a></li>
+        <li><a href="#visual">8. Visual design</a></li>
+        <li><a href="#impl">9. Implementation order</a></li>
+      </ul>
+    </nav>
+
+    <section id="purpose">
+      <h2>1. Purpose</h2>
+      <p>An <strong>Admin-only</strong> dashboard with two distinct views:</p>
+      <ol>
+        <li><strong>Business / Assessments</strong> – Assessment statuses, errors, progress, quick actions</li>
+        <li><strong>System / Agent diagnostics</strong> – LLM invocations, tokens, data transfers, agent performance, request-level metrics</li>
+      </ol>
+      <p><strong>Audience:</strong> CoE admins, operators, support. Not end users running assessments.</p>
+    </section>
+
+    <section id="tabs">
+      <h2>2. Two-tab structure</h2>
+      <p>The Admin page uses <strong>tabs</strong> (or sub-routes) to separate business tracking from system diagnostics:</p>
+      <table>
+        <thead><tr><th>Tab</th><th>Route</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Assessments</strong></td><td><code>/admin</code> or <code>/admin/assessments</code></td><td>Business: assessment list, status, errors, KB config</td></tr>
+          <tr><td><strong>Diagnostics</strong></td><td><code>/admin/diagnostics</code></td><td>System: agents, LLM calls, tokens, data transfers, request-level</td></tr>
+        </tbody>
+      </table>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    T1[Assessments tab]
+    T2[Diagnostics tab]
+    T1 --> A1[Assessments summary]
+    T1 --> A2[KB health]
+    T1 --> A3[Assessment list]
+    T2 --> D1[LLM invocations]
+    T2 --> D2[Tokens used]
+    T2 --> D3[Request log]
+        </div>
+        <p class="diagram-caption">Figure 1: Two-tab structure</p>
+      </div>
+    </section>
+
+    <section id="tab1" class="page-break">
+      <h2>3. Tab 1: Assessments (business tracking)</h2>
+      <p>A grid of panels for assessment and KB business metrics.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    C1[Assessments summary cards]
+    C2[KB Health card]
+    C3[Errors 24h card]
+    T[Assessment list table]
+    B1[KB Config and Seed]
+    B2[Recent errors log]
+    C1 --> T
+    C2 --> T
+    C3 --> T
+    T --> B1
+    T --> B2
+        </div>
+        <p class="diagram-caption">Figure 2: Assessments tab layout</p>
+      </div>
+      <h3>Panels</h3>
+      <table>
+        <thead><tr><th>Panel</th><th>Data</th><th>API</th></tr></thead>
+        <tbody>
+          <tr><td>Assessments summary</td><td>Total, done, in progress, error counts</td><td><code>GET /api/admin/assessments/summary</code></td></tr>
+          <tr><td>KB health</td><td>Status, spend, read/write units</td><td>Existing <code>/api/admin/usage</code></td></tr>
+          <tr><td>Errors (24h)</td><td>Count, last error time</td><td>Derived from assessments</td></tr>
+          <tr><td>Assessment list</td><td>Table: id, app name, status, error, updated</td><td><code>GET /api/admin/assessments</code></td></tr>
+          <tr><td>KB config & seed</td><td>Project dir, seed status</td><td>Existing admin</td></tr>
+          <tr><td>Recent errors log</td><td>Last N errors with timestamp, message</td><td>From assessments</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tab2">
+      <h2>4. Tab 2: Diagnostics (system / agent / request level)</h2>
+      <p>Agent performance, LLM usage, and request-level metrics.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    M1[LLM invocations]
+    M2[Tokens in and out]
+    M3[Agent calls]
+    M4[Data transfers]
+    M5[Latency p95]
+    L[Request log table]
+    M1 --> L
+    M2 --> L
+    M3 --> L
+    M4 --> L
+    M5 --> L
+        </div>
+        <p class="diagram-caption">Figure 3: Diagnostics tab layout</p>
+      </div>
+      <h3>Panels</h3>
+      <table>
+        <thead><tr><th>Panel</th><th>Data</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LLM invocations</strong></td><td>Count by type (chat, research, summarizer) over 24h</td><td>Per-agent breakdown</td></tr>
+          <tr><td><strong>Tokens used</strong></td><td>Input tokens, output tokens, estimated cost</td><td>Aggregate + by agent</td></tr>
+          <tr><td><strong>Agent calls</strong></td><td>Call count per agent (Research, Summarizer, Chat)</td><td>Success vs error</td></tr>
+          <tr><td><strong>Data transfers</strong></td><td>KB queries, chunks retrieved, Tavily calls (if used)</td><td>Volume metrics</td></tr>
+          <tr><td><strong>Latency (p95)</strong></td><td>95th percentile latency per agent/endpoint</td><td>Performance</td></tr>
+          <tr><td><strong>Request log</strong></td><td>Last N requests: time, type, agent, tokens, latency, status</td><td>Drill-down</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="data" class="page-break">
+      <h2>5. Data sources for diagnostics</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>Source</th><th>Implementation</th></tr></thead>
+        <tbody>
+          <tr><td>LangSmith</td><td>Traces, token usage, costs, latency</td><td>When <code>LANGCHAIN_TRACING_V2=true</code>; LangSmith UI. For our dashboard: local aggregation.</td></tr>
+          <tr><td>Local metrics store</td><td>Our own counters and logs</td><td>Persist per-request: agent, tokens_in, tokens_out, latency_ms, status. SQLite table or JSON log.</td></tr>
+          <tr><td>OpenAI usage</td><td>Response headers</td><td><code>usage.prompt_tokens</code>, <code>usage.completion_tokens</code>; we log them.</td></tr>
+          <tr><td>Pinecone</td><td>Read units</td><td>Already in usage_tracker; extend for query count.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>Recommendation:</strong> Add a <strong>local metrics store</strong> (e.g. <code>metrics</code> table) that we populate from each LLM/agent call. LangSmith remains the source of truth for deep traces; our dashboard shows aggregated metrics for quick visibility.
+      </div>
+    </section>
+
+    <section id="api">
+      <h2>6. API additions</h2>
+      <h3>Assessments tab</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/admin/assessments</code></td><td>List all (id, app name, status, error, updated_at). Optional: <code>?status=error</code>, <code>?limit=50</code></td></tr>
+          <tr><td>GET</td><td><code>/api/admin/assessments/summary</code></td><td>Counts: total, done, researching, summarizing, error</td></tr>
+        </tbody>
+      </table>
+      <h3>Diagnostics tab</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/admin/diagnostics/summary</code></td><td>Aggregates: LLM calls, tokens, agent counts, data transfers (24h)</td></tr>
+          <tr><td>GET</td><td><code>/api/admin/diagnostics/requests</code></td><td>Request log: last N with time, type, agent, tokens, latency, status</td></tr>
+          <tr><td>(Optional)</td><td><code>/api/admin/diagnostics/export</code></td><td>Export metrics (CSV/JSON)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="access">
+      <h2>7. Access control</h2>
+      <table>
+        <thead><tr><th>Option</th><th>Approach</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A) URL-based</strong></td><td><code>/admin</code> is admin-only by convention; no auth</td><td>Simplest</td></tr>
+          <tr><td>B) Env flag</td><td><code>ADMIN_ENABLED=true</code>; hide nav when false</td><td>Soft gate</td></tr>
+          <tr><td>C) Auth</td><td>Require login; role=admin</td><td>Future</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Recommendation:</strong> Start with <strong>A</strong>.</p>
+    </section>
+
+    <section id="visual">
+      <h2>8. Visual design (command center)</h2>
+      <ul>
+        <li><strong>Theme:</strong> Dark/slate (<code>#0f172a</code>, <code>#1e293b</code>); status colors (green/amber/red)</li>
+        <li><strong>Tabs:</strong> Clear active state; Assessments | Diagnostics</li>
+        <li><strong>Cards:</strong> Summary metrics in cards; tables for lists/logs</li>
+        <li><strong>Refresh:</strong> Manual + optional auto-refresh (e.g. 30s for Assessments, 15s for Diagnostics)</li>
+      </ul>
+    </section>
+
+    <section id="impl">
+      <h2>9. Implementation order</h2>
+      <ol>
+        <li><strong>Tab structure</strong> – Admin page with Assessments | Diagnostics tabs</li>
+        <li><strong>Assessments tab</strong> – Backend <code>GET /api/admin/assessments</code>; panels (summary, list, KB, errors)</li>
+        <li><strong>Metrics instrumentation</strong> – Log per-request: agent, tokens, latency, status</li>
+        <li><strong>Diagnostics tab</strong> – Backend <code>GET /api/admin/diagnostics/*</code>; panels (LLM, tokens, agents, request log)</li>
+        <li><strong>Polish</strong> – Export, auto-refresh, retry/delete</li>
+      </ol>
+    </section>
+
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+      <p>Admin Command Center – Design Spec · v1.0 · Design for review</p>
+      <p>Cloud Migration Command Center · Center of Excellence</p>
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral', flowchart: { useMaxWidth: true, htmlLabels: true } });
+  </script>
+</body>
+</html>

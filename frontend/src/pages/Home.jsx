@@ -130,31 +130,13 @@ function AssessmentTab() {
   return (
     <div className="max-w-2xl">
       <h3 className="text-xl font-semibold text-slate-900">Application assessment</h3>
-      <p className="mt-1 text-slate-600">Collect information about the application to be migrated. This starts your migration journey.</p>
-      <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Application name</label>
-          <input type="text" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm" placeholder="e.g. Order Management Service" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Description</label>
-          <textarea rows={3} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm" placeholder="Brief description of the application and its purpose" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Technology stack</label>
-          <input type="text" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm" placeholder="e.g. Java 11, Spring Boot, Oracle DB" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Current environment</label>
-          <select className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm">
-            <option value="">Select...</option>
-            <option value="on-prem">On-premises</option>
-            <option value="vm">Virtual machines</option>
-            <option value="cloud-legacy">Cloud (legacy)</option>
-          </select>
-        </div>
-        <button type="submit" className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700">Save assessment</button>
-      </form>
+      <p className="mt-1 text-slate-600">Multi-agent assessment: collect profile, research KB, generate report.</p>
+      <Link
+        to="/assessment"
+        className="mt-4 inline-block rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700"
+      >
+        Start assessment
+      </Link>
     </div>
   )
 }

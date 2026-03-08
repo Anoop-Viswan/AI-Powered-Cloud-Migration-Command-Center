@@ -13,6 +13,10 @@ class ChatRequest(BaseModel):
     category: str | None = None
     application: str | None = None
     top_k: int = 5
+    # Optional LLM overrides (otherwise use .env: OPENAI_SYSTEM_PROMPT, OPENAI_TEMPERATURE, OPENAI_MAX_TOKENS)
+    system_prompt: str | None = None
+    temperature: float | None = None
+    max_tokens: int | None = None
 
 
 def _search_kb(query: str, category: str | None = None, application: str | None = None, top_k: int = 5):
@@ -45,7 +49,13 @@ def chat(body: ChatRequest):
         application=body.application,
         top_k=body.top_k,
     )
-    answer = summarize_with_llm(body.query, chunks)
+    answer = summarize_with_llm(
+        body.query,
+        chunks,
+        system_prompt=body.system_prompt,
+        temperature=body.temperature,
+        max_tokens=body.max_tokens,
+    )
     return {
         "query": body.query,
         "answer": answer,

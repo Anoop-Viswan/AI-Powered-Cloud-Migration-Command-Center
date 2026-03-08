@@ -1,12 +1,18 @@
-"""Admin API: config, seed, usage, manifest."""
+"""Admin API: config, seed, usage, manifest, assessments."""
 import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 
 from backend.config import get_project_dir
+from backend.services.assessment.store import AssessmentStore
+
+
+def get_assessment_store() -> AssessmentStore:
+    return AssessmentStore()
+
 
 router = APIRouter()
 
@@ -118,3 +124,21 @@ def get_manifest():
         return {"applications": {}}
     data = load_manifest(project_dir)
     return {"applications": data}
+
+
+# ─── Assessments (admin view) ─────────────────────────────────────────────────
+
+@router.get("/assessments/summary")
+def get_assessments_summary(store: AssessmentStore = Depends(get_assessment_store)):
+    """Summary counts for scorecards: total, done, in_progress, error."""
+    return store.get_summary()
+
+
+@router.get("/assessments")
+def list_assessments(
+    store: AssessmentStore = Depends(get_assessment_store),
+    limit: int = Query(50, ge=1, le=200),
+    status: str | None = Query(None, description="Filter by status: done, error, draft, etc."),
+):
+    """List assessments for admin: id, app_name, status, error_message, updated_at."""
+    return store.list_all(limit=limit, status_filter=status)

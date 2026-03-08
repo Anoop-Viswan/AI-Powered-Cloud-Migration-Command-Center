@@ -1,27 +1,54 @@
-"""LLM service: summarize search results into an answer (OpenAI)."""
+"""LLM service: summarize search results into an answer. Uses LLM provider abstraction (OpenAI, Anthropic, Azure)."""
 import os
-from openai import OpenAI
 
-SYSTEM_PROMPT = """You are a helpful assistant with access to a knowledge base. Answer the user's question using only the provided context from the knowledge base. If the context does not contain enough information, say so and suggest rephrasing or broader questions. Keep answers concise and professional."""
+from langchain_core.messages import HumanMessage, SystemMessage
+
+from backend.services.llm_provider import get_llm
+
+DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant with access to a knowledge base. Answer the user's question using only the provided context from the knowledge base. If the context does not contain enough information, say so and suggest rephrasing or broader questions. Keep answers concise and professional."""
 
 
-def summarize_with_llm(query: str, context_chunks: list[str]) -> str:
-    """Use OpenAI to generate an answer from query and retrieved chunks. Returns error message if not configured."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return "LLM is not configured. Set OPENAI_API_KEY in .env to enable summarized answers."
+def _is_llm_configured() -> bool:
+    """Check if current LLM provider has required config."""
+    provider = (os.getenv("LLM_PROVIDER") or "openai").strip().lower()
+    if provider == "openai":
+        return bool(os.getenv("OPENAI_API_KEY"))
+    if provider == "anthropic":
+        return bool(os.getenv("ANTHROPIC_API_KEY"))
+    if provider == "azure_openai":
+        return bool(os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"))
+    return False
+
+
+def summarize_with_llm(
+    query: str,
+    context_chunks: list[str],
+    *,
+    system_prompt: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> str:
+    """Use configured LLM provider to generate an answer from query and retrieved chunks.
+
+    Provider selected via LLM_PROVIDER (openai, anthropic, azure_openai).
+    Optional overrides: system_prompt, temperature, max_tokens.
+    """
+    if not _is_llm_configured():
+        return "LLM is not configured. Set OPENAI_API_KEY (or ANTHROPIC_API_KEY / AZURE_OPENAI_* for other providers) in .env to enable summarized answers."
+    prompt = (
+        system_prompt
+        or os.getenv("OPENAI_SYSTEM_PROMPT")
+        or DEFAULT_SYSTEM_PROMPT
+    )
     try:
-        client = OpenAI(api_key=api_key)
+        llm = get_llm(temperature=temperature, max_tokens=max_tokens)
         context = "\n\n---\n\n".join(context_chunks[:10])  # limit tokens
         user_content = f"Context from knowledge base:\n\n{context}\n\nUser question: {query}"
-        resp = client.chat.completions.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            max_tokens=1024,
-        )
-        return resp.choices[0].message.content or "No response generated."
+        messages = [
+            SystemMessage(content=prompt),
+            HumanMessage(content=user_content),
+        ]
+        response = llm.invoke(messages)
+        return response.content if hasattr(response, "content") else str(response) or "No response generated."
     except Exception as e:
         return f"LLM error: {str(e)}"

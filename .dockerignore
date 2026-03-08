@@ -1,0 +1,23 @@
+# Dependencies and env
+node_modules
+frontend/node_modules
+venv
+.venv
+.env
+.env.*
+!.env.example
+
+# Build and cache
+frontend/dist
+.git
+.pinecone_usage.json
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
+
+# Docs and samples (keep manifest example)
+docs
+sample_docs
+tests

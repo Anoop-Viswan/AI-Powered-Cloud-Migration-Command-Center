@@ -6,6 +6,13 @@ openpyxl
 xlrd
 python-pptx
 pytest
+pytest-asyncio
 fastapi
 uvicorn[standard]
+python-multipart
 openai
+langgraph>=0.2.0
+langchain-openai>=0.2.0
+langchain-core>=0.3.0
+langchain-anthropic>=0.2.0
+langsmith>=0.1.0

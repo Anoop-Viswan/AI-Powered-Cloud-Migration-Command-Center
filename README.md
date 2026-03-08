@@ -151,7 +151,8 @@ Note: Estimation uses this app’s operations only and Pinecone’s approximate 
 
 A React frontend and FastAPI backend provide:
 
-- **Home** – Landing page with Center of Excellence (CoE) info and migration journey tabs: **Assessment** (application info form), **Planning** (timelines, dependencies, WBS), **Migration** and **Support** (placeholders).
+- **Home** – Landing page with Center of Excellence (CoE) info and migration journey tabs.
+- **Assessment** – Multi-agent assessment: collect application profile, run research (KB search + LLM synthesis), generate assessment report. Uses LangGraph for orchestration; LangSmith for observability when configured.
 - **Ask the KB** – Chat interface: questions are run against the knowledge base and summarized by an LLM (set `OPENAI_API_KEY` in `.env` for summaries).
 - **Admin** – View config (project dir, spend limit), usage, run re-index (seed), and view manifest applications.
 
@@ -168,14 +169,36 @@ cd frontend && npm install && npm run dev
 
 Open [http://localhost:5173](http://localhost:5173). The frontend proxies `/api` to the backend. Optional: set `OPENAI_API_KEY` (and optionally `OPENAI_MODEL`, default `gpt-4o-mini`) in `.env` for chat summarization.
 
+## Deployment (Hugging Face or cloud)
+
+You **do need to containerize** for both Hugging Face Spaces and cloud (AWS, GCP, Azure). The repo includes a **Dockerfile** that builds the frontend and runs the backend in one image.
+
+- **Hugging Face:** Create a **Docker Space**, push this repo (with Dockerfile), set secrets (`PINECONE_API_KEY`, optional `OPENAI_API_KEY`). The app listens on port 7860. See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for step-by-step and project-directory options.
+- **Cloud:** Build the same image and deploy to ECS, Cloud Run, Container Apps, etc. Same doc has a short cloud section.
+
+Quick local test of the container:
+
+```bash
+docker build -t migration-command-center .
+docker run -p 7860:7860 -e PINECONE_API_KEY=your-key -v /path/to/docs:/data migration-command-center
+```
+
+Then open [http://localhost:7860](http://localhost:7860).
+
 ## Running tests
 
-Unit tests cover document extractors (PDF, DOCX, XLSX, CSV, PPTX, plain text) and semantic search (manifest, application derivation, build_records, search with mocked index). From the project root with the venv activated:
+Unit and integration tests cover document extractors, semantic search, and the assessment module. From the project root with the venv activated:
 
 ```bash
 pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
+
+Assessment tests:
+- `tests/test_assessment_models.py` – ApplicationProfile, AssessmentState
+- `tests/test_assessment_store.py` – SQLite persistence
+- `tests/test_assessment_agents.py` – Research Agent, Summarizer (mocked LLM)
+- `tests/test_assessment_api.py` – API integration (start, profile, research, summarize)
 
 ## Project layout
 

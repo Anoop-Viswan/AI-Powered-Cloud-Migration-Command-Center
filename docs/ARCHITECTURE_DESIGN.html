@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture & Design – Cloud Migration Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #4a5568;
+      --accent: #0d9488;
+      --accent-soft: rgba(13, 148, 136, 0.08);
+      --border: #e2e8f0;
+      --surface: #f8fafc;
+      --font: 'Inter', system-ui, sans-serif;
+      --font-head: 'IBM Plex Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); line-height: 1.6; font-size: 15px; background: var(--bg); }
+    .doc { max-width: 900px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+    @media print { .doc { max-width: 100%; padding: 1rem; } .no-print { display: none !important; } }
+    .cover { text-align: center; padding: 3rem 0 4rem; border-bottom: 2px solid var(--accent); }
+    .cover h1 { font-family: var(--font-head); font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+    .cover .subtitle { color: var(--text-muted); font-size: 1rem; }
+    .cover .meta { margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted); }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; margin: 2rem 0; }
+    .toc h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .toc ul { list-style: none; }
+    .toc li { margin: 0.4rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    h2 { font-family: var(--font-head); font-size: 1.35rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text); }
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    ul, ol { margin: 0 0 1rem 1.5rem; color: var(--text-muted); }
+    li { margin-bottom: 0.35rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 0.6rem 0.9rem; text-align: left; }
+    th { background: var(--surface); font-weight: 600; color: var(--text); }
+    td { color: var(--text-muted); }
+    .doc-link { color: var(--accent); font-weight: 500; }
+    .callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+    .callout p { margin-bottom: 0; }
+    pre, code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.85em; }
+    pre { padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+    code { padding: 0.15rem 0.4rem; }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <p class="no-print" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Umbrella design document. Open in a browser. Print-friendly.</p>
+    <header class="cover">
+      <h1>Architecture & Design</h1>
+      <p class="subtitle">Cloud Migration Command Center</p>
+      <p class="meta">Single entry point for all architecture and design artifacts</p>
+    </header>
+
+    <nav class="toc no-print">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#index">2. Design documents index</a></li>
+        <li><a href="#llm">3. LLM provider flexibility</a></li>
+        <li><a href="#architecture">4. Architecture at a glance</a></li>
+        <li><a href="#decisions">5. Key design decisions</a></li>
+        <li><a href="#links">6. Quick links</a></li>
+      </ul>
+    </nav>
+
+    <section id="overview">
+      <h2>1. Overview</h2>
+      <p>The <strong>Cloud Migration Command Center</strong> is an AI-powered CoE (Center of Excellence) application that provides:</p>
+      <ul>
+        <li><strong>Semantic Search</strong> – Query the knowledge base with natural language</li>
+        <li><strong>Migration Request (Assessment)</strong> – <strong>Two-role flow:</strong> Application users submit app data (profile); Admins run research, generate and edit reports, download. See <a href="MIGRATION_REQUEST_FLOW.md" class="doc-link">Migration Request Flow</a>.</li>
+        <li><strong>Chat</strong> – Summarize and discuss documents</li>
+        <li><strong>Admin</strong> – View submitted requests, run research, generate/edit reports, download; KB management; optional diagnostics</li>
+      </ul>
+    </section>
+
+    <section id="index" class="page-break">
+      <h2>2. Design documents index</h2>
+      <p>All architecture and design artifacts with links.</p>
+      <table>
+        <thead>
+          <tr><th>Document</th><th>Description</th><th>Links</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Migration Request Flow</strong></td>
+            <td>Two-role flow: Application User (submit) vs Admin (research, report, edit, download)</td>
+            <td><a href="MIGRATION_REQUEST_FLOW.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Decision Matrix</td>
+            <td>Framework & tool selection with rationale (LangGraph, LangSmith, Pinecone, etc.)</td>
+            <td><a href="DECISION_MATRIX.html" class="doc-link">HTML</a> · <a href="DECISION_MATRIX.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Assessment Module Design</td>
+            <td>Multi-agent system, agents, API, phases</td>
+            <td><a href="ASSESSMENT_MODULE_DESIGN.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Assessment Design</td>
+            <td>Architecture & design with diagrams</td>
+            <td><a href="ASSESSMENT_DESIGN.html" class="doc-link">HTML</a></td>
+          </tr>
+          <tr>
+            <td>Assessment Profile Design</td>
+            <td>Seven architecture pillars, fields, validation</td>
+            <td><a href="ASSESSMENT_PROFILE_DESIGN.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Assessment Profile Pillars</td>
+            <td>Quick reference for profile sections</td>
+            <td><a href="ASSESSMENT_PROFILE_PILLARS.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Wireframes</td>
+            <td>Application User (profile, submit, confirmation) + Admin (submissions, research, report, edit, download)</td>
+            <td><a href="WIREFRAMES.html" class="doc-link">HTML</a></td>
+          </tr>
+          <tr>
+            <td>Admin Command Center</td>
+            <td>Admin: submissions list, run research, generate/edit report, download; KB; optional diagnostics</td>
+            <td><a href="ADMIN_COMMAND_CENTER_DESIGN.html" class="doc-link">HTML</a> · <a href="ADMIN_COMMAND_CENTER_DESIGN.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>LLM Dataflow</td>
+            <td>How Chat uses KB + LLM for summarization</td>
+            <td><a href="DATAFLOW_LLM.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Deployment</td>
+            <td>Hugging Face Spaces, Docker, cloud deployment</td>
+            <td><a href="DEPLOYMENT.md" class="doc-link">MD</a></td>
+          </tr>
+          <tr>
+            <td>Design Review Checklist</td>
+            <td>Checklist for design approval</td>
+            <td><a href="DESIGN_REVIEW_CHECKLIST.md" class="doc-link">MD</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="llm">
+      <h2>3. LLM provider flexibility</h2>
+      <p>The architecture supports <strong>seamless LLM switching</strong> via a provider abstraction. All LLM calls (Chat, Research Agent, Summarizer Agent) use a single <code>get_llm()</code> factory.</p>
+      <h3>How it works</h3>
+      <ul>
+        <li><strong>Provider selection:</strong> Set <code>LLM_PROVIDER=openai|anthropic|azure_openai</code> in <code>.env</code></li>
+        <li><strong>Unified interface:</strong> <code>backend/services/llm_provider.py</code> returns a LangChain <code>BaseChatModel</code></li>
+        <li><strong>No code changes:</strong> Switch providers by changing env vars and adding the relevant API key</li>
+      </ul>
+      <h3>Supported providers</h3>
+      <table>
+        <thead><tr><th>Provider</th><th>Env vars</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>openai</strong> (default)</td><td>OPENAI_API_KEY, OPENAI_MODEL, OPENAI_TEMPERATURE, OPENAI_MAX_TOKENS</td><td>Default</td></tr>
+          <tr><td><strong>anthropic</strong></td><td>ANTHROPIC_API_KEY, ANTHROPIC_MODEL</td><td>Requires langchain-anthropic</td></tr>
+          <tr><td><strong>azure_openai</strong></td><td>AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT</td><td>Enterprise / data residency</td></tr>
+        </tbody>
+      </table>
+      <h3>Adding a new provider</h3>
+      <ol>
+        <li>Add a branch in <code>backend/services/llm_provider.py</code> → <code>get_llm()</code></li>
+        <li>Return a LangChain <code>BaseChatModel</code></li>
+        <li>Document env vars in <code>.env.example</code></li>
+      </ol>
+    </section>
+
+    <section id="architecture" class="page-break">
+      <h2>4. Architecture at a glance</h2>
+      <pre style="font-size: 0.85rem;">┌─────────────────────────────────────────────────────────────────────────┐
+│  Frontend (React/Vite)                                                   │
+│  Home · Assessment (wizard) · Chat · Admin                              │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Backend (FastAPI)                                                       │
+│  /api/search · /api/chat · /api/assessment/* · /api/admin/*              │
+└─────────────────────────────────────────────────────────────────────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌──────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│  Pinecone    │    │  LLM Provider    │    │  SQLite          │
+│  (Vector KB) │    │  (OpenAI /       │    │  (Assessments)   │
+│              │    │   Anthropic /     │    │                  │
+│              │    │   Azure)          │    │                  │
+└──────────────┘    └──────────────────┘    └──────────────────┘</pre>
+    </section>
+
+    <section id="decisions">
+      <h2>5. Key design decisions</h2>
+      <table>
+        <thead><tr><th>Decision</th><th>Choice</th><th>See</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Migration request flow</strong></td><td>Two roles: Application User (submit only) vs Admin (research, report, edit, download)</td><td><a href="MIGRATION_REQUEST_FLOW.md" class="doc-link">Migration Request Flow</a></td></tr>
+          <tr><td>Multi-agent orchestration</td><td>LangGraph</td><td><a href="DECISION_MATRIX.html" class="doc-link">Decision Matrix</a></td></tr>
+          <tr><td>Observability</td><td>LangSmith</td><td><a href="DECISION_MATRIX.html" class="doc-link">Decision Matrix</a></td></tr>
+          <tr><td>Vector DB</td><td>Pinecone</td><td><a href="DECISION_MATRIX.html" class="doc-link">Decision Matrix</a></td></tr>
+          <tr><td>LLM</td><td>OpenAI (default); switchable to Anthropic, Azure</td><td><a href="#llm">§3 above</a></td></tr>
+          <tr><td>Profile UI</td><td>Wizard + 7 pillar tabs (Application User)</td><td><a href="ASSESSMENT_PROFILE_DESIGN.md" class="doc-link">Profile Design</a></td></tr>
+          <tr><td>Admin</td><td>Submissions list; run research, generate/edit report, download; KB</td><td><a href="ADMIN_COMMAND_CENTER_DESIGN.html" class="doc-link">Admin Design</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="links">
+      <h2>6. Quick links</h2>
+      <ul>
+        <li><a href="MIGRATION_REQUEST_FLOW.md" class="doc-link">Migration Request Flow</a> – Two-role flow (Application User vs Admin)</li>
+        <li><a href="WIREFRAMES.html" class="doc-link">Wireframes</a> – Application User + Admin mockups</li>
+        <li><a href="DECISION_MATRIX.html" class="doc-link">Decision Matrix</a> – Framework choices with rationale</li>
+        <li><a href="ASSESSMENT_DESIGN.html" class="doc-link">Assessment Design</a> – Architecture diagrams</li>
+        <li><a href="ADMIN_COMMAND_CENTER_DESIGN.html" class="doc-link">Admin Design</a> – Admin dashboard (submissions, research, report, edit, download)</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+      <p>Architecture & Design · Cloud Migration Command Center · Umbrella document v1.0</p>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Wireframes – Cloud Migration Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --wire-bg: #fafafa;
+      --wire-border: #9ca3af;
+      --wire-border-light: #d1d5db;
+      --wire-text: #374151;
+      --wire-muted: #6b7280;
+      --accent: #0d9488;
+      --green: #059669;
+      --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f3f4f6; color: var(--wire-text); line-height: 1.5; padding: 2rem; }
+    .doc { max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--wire-text); }
+    .intro { color: var(--wire-muted); font-size: 0.9rem; margin-bottom: 2.5rem; }
+    .screen { background: white; border: 2px dashed var(--wire-border); border-radius: 12px; margin-bottom: 2.5rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .screen-header { background: var(--wire-bg); border-bottom: 2px dashed var(--wire-border); padding: 0.75rem 1.25rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--wire-muted); }
+    .screen-header .route { color: var(--accent); font-weight: 700; }
+    .screen-body { padding: 1.25rem; }
+    .wf-nav { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--wire-border-light); background: white; }
+    .wf-nav .logo { font-weight: 700; font-size: 1rem; }
+    .wf-nav .logo span { color: var(--accent); }
+    .wf-nav .links { display: flex; gap: 1.25rem; font-size: 0.85rem; }
+    .wf-nav a { color: var(--wire-muted); text-decoration: none; }
+    .wf-nav a.active { color: var(--accent); font-weight: 600; }
+    .wf-hero { padding: 2.5rem 2rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fef3c7 100%); border: 1px dashed var(--wire-border-light); border-radius: 8px; text-align: center; margin-bottom: 1.5rem; }
+    .wf-hero h2 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .wf-hero p { color: var(--wire-muted); font-size: 0.95rem; }
+    .wf-hero .badge { display: inline-block; margin-top: 1rem; padding: 0.25rem 0.75rem; background: rgba(13,148,136,0.15); color: var(--accent); border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .wf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 768px) { .wf-cards { grid-template-columns: 1fr 1fr; } }
+    .wf-card { border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1rem; background: white; }
+    .wf-card .icon { width: 2rem; height: 2rem; border: 1px dashed var(--wire-border); border-radius: 6px; margin-bottom: 0.5rem; }
+    .wf-card .title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .wf-card .desc { font-size: 0.75rem; color: var(--wire-muted); }
+    .wf-form .field { margin-bottom: 1rem; }
+    .wf-form label { display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--wire-text); }
+    .wf-form input, .wf-form select, .wf-form textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px dashed var(--wire-border); border-radius: 6px; font-size: 0.9rem; background: white; }
+    .wf-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .wf-form .btn { margin-top: 1rem; padding: 0.5rem 1.25rem; background: var(--green); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+    .wf-form .file-hint { font-size: 0.75rem; color: var(--wire-muted); margin-top: 0.25rem; }
+    .wf-steps { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .wf-step { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; }
+    .wf-step.active { background: var(--green); color: white; }
+    .wf-step.done { background: #d1fae5; color: #047857; }
+    .wf-step.pending { background: #f3f4f6; color: var(--wire-muted); }
+    .wf-pillar-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 1rem; padding: 0.5rem; background: var(--wire-bg); border-radius: 8px; }
+    .wf-pillar-tabs .tab { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.8rem; background: var(--wire-border-light); color: var(--wire-text); }
+    .wf-pillar-tabs .tab.active { background: var(--accent); color: white; }
+    .wf-admin-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: #0f172a; color: white; }
+    .wf-admin-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .wf-admin-tabs { display: flex; gap: 0.25rem; }
+    .wf-admin-tabs .tab { padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+    .wf-admin-tabs .tab.active { background: var(--accent); color: white; }
+    .wf-admin-actions { display: flex; gap: 0.5rem; }
+    .wf-admin-actions .btn-sm { padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.8rem; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; }
+    .wf-summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1.25rem; background: #1e293b; }
+    .wf-summary-card { background: #334155; border-radius: 8px; padding: 1rem; color: white; }
+    .wf-summary-card .label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; }
+    .wf-summary-card .value { font-size: 1.25rem; font-weight: 700; }
+    .wf-summary-card .sub { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+    .wf-table-wrap { padding: 1rem 1.25rem; overflow-x: auto; }
+    .wf-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .wf-table th, .wf-table td { border: 1px dashed var(--wire-border-light); padding: 0.6rem 0.9rem; text-align: left; }
+    .wf-table th { background: var(--wire-bg); font-weight: 600; color: var(--wire-text); }
+    .wf-table td { color: var(--wire-muted); }
+    .wf-table .status-done { color: var(--green); }
+    .wf-table .status-error { color: var(--red); }
+    .wf-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 1.25rem; }
+    .wf-panel { border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1rem; background: white; }
+    .wf-panel .title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .wf-panel .content { font-size: 0.8rem; color: var(--wire-muted); }
+    .wf-metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; padding: 1.25rem; background: #1e293b; }
+    @media (max-width: 900px) { .wf-metrics { grid-template-columns: repeat(2, 1fr); } }
+    .wf-metric { background: #334155; border-radius: 8px; padding: 1rem; color: white; }
+    .wf-metric .label { font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.25rem; }
+    .wf-metric .value { font-size: 1.1rem; font-weight: 700; }
+    .toc { background: white; border: 1px solid var(--wire-border-light); border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem; }
+    .toc h2 { font-size: 0.9rem; margin-bottom: 0.75rem; }
+    .toc ul { list-style: none; }
+    .toc li { margin: 0.35rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+    .toc a:hover { text-decoration: underline; }
+    .pillar-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--wire-text); padding-bottom: 0.5rem; border-bottom: 1px dashed var(--wire-border-light); }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <h1>Page Wireframes</h1>
+    <p class="intro"><strong>Two-role flow:</strong> <strong>Application User</strong> – Profile (all pillars) → Validate &amp; Submit → Confirmation (no research or report). <strong>Admin</strong> – View submissions → Open → Run research → Generate report → Edit/enhance report → Download. Per-section validation on profile; full validation on &quot;Submit for assessment&quot;.</p>
+
+    <nav class="toc">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="#landing">1. Landing page</a></li>
+        <li><a href="#profile-overview">2a. Application User – Profile Overview tab</a></li>
+        <li><a href="#profile-architecture">2b. Application User – Profile Architecture tab</a></li>
+        <li><a href="#profile-data">2c. Application User – Profile Data tab</a></li>
+        <li><a href="#profile-bcdr">2d. Application User – Profile BC &amp; DR tab</a></li>
+        <li><a href="#profile-cost">2e. Application User – Profile Cost tab</a></li>
+        <li><a href="#profile-security">2f. Application User – Profile Security tab</a></li>
+        <li><a href="#profile-project">2g. Application User – Profile Project tab (final)</a></li>
+        <li><a href="#assessment-submit">3. Application User – Submit &amp; Confirmation</a></li>
+        <li><a href="#admin-assessments">4. Admin – Assessments tab (submissions list)</a></li>
+        <li><a href="#admin-submission-detail">5. Admin – Open submission (detail + actions)</a></li>
+        <li><a href="#admin-research-report">6. Admin – Research &amp; Report (edit, download)</a></li>
+        <li><a href="#admin-kb">7. Admin – Knowledge Base tab</a></li>
+      </ul>
+    </nav>
+
+    <!-- 1. Landing -->
+    <section id="landing" class="screen">
+      <div class="screen-header">Wireframe 1 · <span class="route">/</span> · Landing page</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links">
+            <a class="active" href="#">Home</a>
+            <a href="#">Assessment</a>
+            <a href="#">Chat</a>
+            <a href="#">Admin</a>
+          </div>
+        </div>
+        <div class="wf-hero">
+          <h2>Build a Cloud Migration Command Center</h2>
+          <p>Single pane of glass to streamline all your cloud migration tasks.</p>
+          <span class="badge">AI-Powered CoE</span>
+        </div>
+        <div class="wf-cards">
+          <div class="wf-card"><div class="icon"></div><div class="title">Semantic Search</div><div class="desc">Query your KB with natural language</div></div>
+          <div class="wf-card"><div class="icon"></div><div class="title">Assessment</div><div class="desc">Multi-agent migration assessment</div></div>
+          <div class="wf-card"><div class="icon"></div><div class="title">Chat</div><div class="desc">Summarize and discuss documents</div></div>
+          <div class="wf-card"><div class="icon"></div><div class="title">Admin</div><div class="desc">Diagnostics and management</div></div>
+        </div>
+        <div style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 2rem; text-align: center; color: var(--wire-muted); font-size: 0.9rem;">Project timeline · Tools used · Lessons learnt</div>
+      </div>
+    </section>
+
+    <!-- 2a. Profile – Overview -->
+    <section id="profile-overview" class="screen">
+      <div class="screen-header">Wireframe 2a · <span class="route">/assessment</span> · Profile – Tab 1: General Overview</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 0.25rem;">Application Assessment</h2>
+          <p style="font-size: 0.9rem; color: var(--wire-muted); margin-bottom: 1rem;">Application User: Profile → Submit → Confirmation. Admin: view submissions, run research, generate report, edit, download.</p>
+          <div class="wf-steps">
+            <div class="wf-step active">1. Profile</div>
+            <div class="wf-step pending">2. Submit</div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-pillar-tabs">
+            <span class="tab active">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">1. General Overview <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(all fields below required)</span></div>
+            <div class="field"><label>Application name *</label><input type="text" placeholder="e.g. OrderService" /></div>
+            <div class="field"><label>Business purpose / What business it does *</label><textarea rows="2" placeholder="e.g. Order processing and inventory management"></textarea></div>
+            <div class="field"><label>Description <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder="Brief description"></textarea></div>
+            <div class="field row">
+              <div><label>User count (estimate) *</label><input type="text" placeholder="e.g. 1000, 10K-50K" /></div>
+              <div><label>Priority *</label><select><option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+            </div>
+            <div class="field row">
+              <div><label>RTO (Recovery Time Objective) *</label><input type="text" placeholder="e.g. 4 hours" /></div>
+              <div><label>RPO (Recovery Point Objective) *</label><input type="text" placeholder="e.g. 1 hour" /></div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--wire-muted); margin: -0.5rem 0 1rem;">Hint: Critical apps often use RTO 1 hour; high priority, 4 hours. RPO for critical: 1 hour or less.</p>
+            <div class="field"><label>Compliance requirements (comma-separated) <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><input type="text" placeholder="e.g. PCI, HIPAA, SOC2" /></div>
+            <div class="field"><label>Known risks</label><textarea rows="2" placeholder=""></textarea></div>
+            <div class="field"><label>Constraints</label><textarea rows="2" placeholder=""></textarea></div>
+            <div class="field"><label>Additional notes</label><textarea rows="2" placeholder=""></textarea></div>
+            <button class="btn">Continue to Architecture</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2b. Profile – Architecture -->
+    <section id="profile-architecture" class="screen">
+      <div class="screen-header">Wireframe 2b · <span class="route">/assessment</span> · Profile – Tab 2: Architecture</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab active">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">2. Architecture <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(one of description or diagram required for current state)</span></div>
+            <div class="field"><label>Tech stack (comma-separated) *</label><input type="text" placeholder="e.g. Java 11, Spring Boot, Oracle DB" /></div>
+            <div class="field row">
+              <div><label>Current environment *</label><select><option>On-premises</option><option>VM</option><option>Cloud (legacy)</option><option>Other</option></select></div>
+              <div><label>Target environment *</label><select><option>Azure</option><option>AWS</option><option>GCP</option><option>Other</option></select></div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--wire-muted); margin-bottom: 0.75rem;">Provide either a description or upload a diagram of current architecture.</p>
+            <div class="field"><label>Current state architecture description <span style="color: var(--wire-muted); font-weight: 400;">(optional if diagram uploaded)</span></label><textarea rows="3" placeholder="Describe current architecture (e.g. three-tier: web, app, DB)"></textarea></div>
+            <div class="field"><label>Current state diagram <span style="color: var(--wire-muted); font-weight: 400;">(optional if description filled)</span></label><input type="file" style="font-size: 0.85rem;" /><div class="file-hint">PNG, JPG, WEBP · max 10 MB</div></div>
+            <div class="field"><label>Future state architecture description <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="3" placeholder="Describe target architecture or e.g. To be determined"></textarea></div>
+            <p style="font-size: 0.8rem; color: var(--wire-muted); margin: -0.25rem 0 1rem;">If you don&apos;t have a target state yet, add a short note to improve the assessment.</p>
+            <div class="field"><label>Future state diagram <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><input type="file" style="font-size: 0.85rem;" /><div class="file-hint">PNG, JPG, WEBP · max 10 MB</div></div>
+            <button class="btn">Continue to Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2c. Profile – Data -->
+    <section id="profile-data" class="screen">
+      <div class="screen-header">Wireframe 2c · <span class="route">/assessment</span> · Profile – Tab 3: Data Management</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab active">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">3. Data Management <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(DB migration answer required; if Yes, data fields below required)</span></div>
+            <div class="field"><label>Does this application contain database migration? *</label><select><option value="">Select Yes or No</option><option>Yes</option><option>No</option></select></div>
+            <p style="font-size: 0.8rem; color: var(--wire-muted); margin: -0.5rem 0 1rem;">Select Yes if you will migrate or replicate databases as part of this move.</p>
+            <div class="field"><label>Total data volume <span style="color: var(--red);">* when DB migration = Yes</span></label><input type="text" placeholder="e.g. 500 GB, 2 TB" /></div>
+            <div class="field"><label>Database types (comma-separated) <span style="color: var(--red);">* when DB migration = Yes</span></label><input type="text" placeholder="e.g. Oracle, SQL Server, PostgreSQL" /></div>
+            <div class="field"><label>Current databases description <span style="color: var(--red);">* when DB migration = Yes</span></label><textarea rows="2" placeholder="DBs, sizes, versions"></textarea></div>
+            <div class="field"><label>Target databases (if known) <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder=""></textarea></div>
+            <div class="field"><label>Data retention requirements <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><input type="text" placeholder="e.g. 7 years for compliance" /></div>
+            <div class="field"><label>Data ingestion / Ingress / Egress / ETL <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder="How data enters, sources, destinations"></textarea></div>
+            <div class="field"><label>Data migration notes <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder="Special considerations"></textarea></div>
+            <button class="btn">Continue to BC & DR</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2d. Profile – BC & DR -->
+    <section id="profile-bcdr" class="screen">
+      <div class="screen-header">Wireframe 2d · <span class="route">/assessment</span> · Profile – Tab 4: Business Continuity & DR</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab active">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">4. Business Continuity & DR <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(all fields below required)</span></div>
+            <div class="field"><label>Current DR strategy *</label><textarea rows="2" placeholder="e.g. Backup to tape, no replication"></textarea></div>
+            <div class="field"><label>Backup frequency *</label><input type="text" placeholder="e.g. daily, weekly" /></div>
+            <div class="field"><label>Failover approach *</label><input type="text" placeholder="e.g. Manual failover, cold standby" /></div>
+            <div class="field"><label>DR testing frequency *</label><input type="text" placeholder="e.g. quarterly" /></div>
+            <div class="field"><label>BC/DR additional notes <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder=""></textarea></div>
+            <button class="btn">Continue to Cost</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2e. Profile – Cost -->
+    <section id="profile-cost" class="screen">
+      <div class="screen-header">Wireframe 2e · <span class="route">/assessment</span> · Profile – Tab 5: Cost</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab active">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">5. Cost <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(all optional)</span></div>
+            <div class="field"><label>Current annual cost (infra, ops) <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><input type="text" placeholder="e.g. $50K/year" /></div>
+            <div class="field"><label>Migration budget</label><input type="text" placeholder="e.g. $100K" /></div>
+            <div class="field"><label>Cost constraints</label><textarea rows="2" placeholder=""></textarea></div>
+            <div class="field"><label>Licensing considerations</label><textarea rows="2" placeholder=""></textarea></div>
+            <button class="btn">Continue to Security</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2f. Profile – Security -->
+    <section id="profile-security" class="screen">
+      <div class="screen-header">Wireframe 2f · <span class="route">/assessment</span> · Profile – Tab 6: Security</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. You cannot proceed until the current section is valid.</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab active">Security</span>
+            <span class="tab">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">6. Security <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(auth and encryption required)</span></div>
+            <div class="field"><label>Authentication type *</label><input type="text" placeholder="e.g. SAML, OAuth, AD, LDAP" /></div>
+            <div class="field"><label>Encryption at rest *</label><input type="text" placeholder="e.g. AES-256, TDE" /></div>
+            <div class="field"><label>Encryption in transit *</label><input type="text" placeholder="e.g. TLS 1.2" /></div>
+            <div class="field"><label>PII handling <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><textarea rows="2" placeholder="How PII is stored, masked"></textarea></div>
+            <div class="field"><label>Compliance frameworks (comma-separated) <span style="color: var(--wire-muted); font-weight: 400;">(optional)</span></label><input type="text" placeholder="e.g. SOC2, GDPR, HIPAA" /></div>
+            <button class="btn">Continue to Project</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2g. Profile – Project -->
+    <section id="profile-project" class="screen">
+      <div class="screen-header">Wireframe 2g · <span class="route">/assessment</span> · Profile – Tab 7: Project & Timeline (final section)</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 1rem; font-weight: 500;">Fill required fields in each section. &quot;Submit for assessment&quot; runs full validation and submits to Admins (no research or report for you).</p>
+          <div class="wf-steps"><div class="wf-step active">1. Profile</div><div class="wf-step pending">2. Submit</div></div>
+          <div class="wf-pillar-tabs">
+            <span class="tab">Overview</span>
+            <span class="tab">Architecture</span>
+            <span class="tab">Data</span>
+            <span class="tab">BC & DR</span>
+            <span class="tab">Cost</span>
+            <span class="tab">Security</span>
+            <span class="tab active">Project</span>
+          </div>
+          <div class="wf-form" style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <div class="pillar-title">7. Project & Timeline <span style="font-weight: 400; color: var(--wire-muted); font-size: 0.85rem;">(all optional)</span></div>
+            <div class="field"><label>Project manager / owner</label><input type="text" placeholder="Name or team" /></div>
+            <div class="field"><label>Timeline expectation</label><input type="text" placeholder="e.g. 6 months" /></div>
+            <div class="field"><label>Team size</label><input type="text" placeholder="e.g. 3-5" /></div>
+            <div class="field"><label>Dependencies (comma-separated)</label><input type="text" placeholder="Other apps, databases" /></div>
+            <div class="field"><label>Integrations (comma-separated)</label><input type="text" placeholder="e.g. SAP, Salesforce" /></div>
+            <div class="field"><label>Preferred go-live window</label><input type="text" placeholder="e.g. Q2 2025" /></div>
+            <button class="btn">Submit for assessment</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Application User – Submit & Confirmation -->
+    <section id="assessment-submit" class="screen">
+      <div class="screen-header">Wireframe 3 · <span class="route">/assessment</span> · Application User – Submit for assessment</div>
+      <div class="screen-body">
+        <div class="wf-nav">
+          <div class="logo">Cloud Migration <span>Command Center</span></div>
+          <div class="links"><a href="#">Home</a><a class="active" href="#">Assessment</a><a href="#">Chat</a><a href="#">Admin</a></div>
+        </div>
+        <div style="padding: 1.5rem 0;">
+          <div class="wf-steps"><div class="wf-step done">1. Profile</div><div class="wf-step active">2. Submit</div></div>
+          <div style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1.5rem;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Pre-submit check</h3>
+            <p style="font-size: 0.9rem; color: var(--wire-muted); margin-bottom: 1rem;">We've validated your input. Review any findings below (if any), then submit. Admins will be notified and will run research and generate the report.</p>
+            <div style="font-size: 0.85rem; color: var(--wire-muted); margin-bottom: 1rem;">✓ All required fields complete · ✓ No issues found (or list findings to confirm)</div>
+            <button class="btn">Submit for assessment</button>
+            <p style="font-size: 0.8rem; color: var(--wire-muted); margin-top: 1rem;">→ Request stored · Admins notified · Confirmation screen</p>
+          </div>
+          <div style="margin-top: 1.5rem; border: 1px dashed var(--green); border-radius: 8px; padding: 1.5rem; background: #f0fdf4;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Confirmation (after submit)</h3>
+            <p style="font-size: 0.9rem; color: var(--wire-text); margin-bottom: 0.5rem;">Your migration request has been submitted.</p>
+            <p style="font-size: 0.85rem; color: var(--wire-muted);">Admins will review your application details, run research, and produce an assessment report. You can check back later or we will notify you when the report is ready.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Admin Assessments (list) -->
+    <section id="admin-assessments" class="screen">
+      <div class="screen-header">Wireframe 4 · <span class="route">/admin</span> · Assessments tab (submissions list)</div>
+      <div class="screen-body" style="padding: 0;">
+        <div class="wf-admin-header">
+          <h2>Admin Command Center</h2>
+          <div class="wf-admin-tabs"><span class="tab active">Assessments</span><span class="tab">Knowledge Base</span></div>
+          <div class="wf-admin-actions"><button class="btn-sm">Refresh</button><button class="btn-sm">Export</button></div>
+        </div>
+        <div class="wf-summary-cards">
+          <div class="wf-summary-card"><div class="label">Total</div><div class="value">12</div><div class="sub">Migration requests</div></div>
+          <div class="wf-summary-card"><div class="label">New (submitted)</div><div class="value">3</div><div class="sub">Awaiting research</div></div>
+          <div class="wf-summary-card"><div class="label">Report done</div><div class="value">7</div><div class="sub">2 error</div></div>
+        </div>
+        <div class="wf-table-wrap">
+          <table class="wf-table">
+            <thead><tr><th>ID</th><th>App name</th><th>Status</th><th>Submitted</th><th>Updated</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><code>abc-123</code></td><td>OrderSvc</td><td><span style="color: var(--accent); font-weight: 600;">submitted</span></td><td>1h ago</td><td>1h ago</td><td>[Open]</td></tr>
+              <tr><td><code>def-456</code></td><td>FinanceApp</td><td class="status-done">report_done</td><td>2d ago</td><td>1h ago</td><td>[Open] [Download]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="wf-panels">
+          <div class="wf-panel"><div class="title">KB Config & Seed</div><div class="content">Project dir: /path/to/docs</div><button class="btn btn-sm">Run seed</button></div>
+          <div class="wf-panel"><div class="title">Recent errors (log)</div><div class="content">10:32 - Research failed...<br>09:15 - OpenAI rate limit</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Admin – Open submission (detail + actions) -->
+    <section id="admin-submission-detail" class="screen">
+      <div class="screen-header">Wireframe 5 · <span class="route">/admin/assessment/:id</span> · Open submission</div>
+      <div class="screen-body">
+        <div class="wf-admin-header">
+          <h2>Admin Command Center · OrderSvc (abc-123)</h2>
+          <div class="wf-admin-tabs"><span class="tab">Assessments</span><span class="tab">Knowledge Base</span></div>
+          <div class="wf-admin-actions"><button class="btn-sm">Back to list</button></div>
+        </div>
+        <div style="padding: 1.25rem;">
+          <p style="font-size: 0.9rem; color: var(--wire-muted); margin-bottom: 1rem;">Full application profile (read-only) as submitted by the Application User. Use actions below to run research, generate report, edit, and download.</p>
+          <div style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+            <div class="pillar-title">Profile summary</div>
+            <p style="font-size: 0.85rem; color: var(--wire-muted);">Overview · Architecture · Data · BC &amp; DR · Cost · Security · Project (all tabs viewable, read-only)</p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <button class="btn">Run research</button>
+            <button class="btn" style="background: var(--accent);">Generate report</button>
+            <button class="btn" style="background: var(--wire-muted);">Edit report</button>
+            <button class="btn-sm" style="border: 1px solid var(--wire-border);">Download DOCX</button>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--wire-muted); margin-top: 1rem;">Optional: Add manual notes or guidance before running research; check previous KB as needed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Admin – Research & Report (edit, download) -->
+    <section id="admin-research-report" class="screen">
+      <div class="screen-header">Wireframe 6 · <span class="route">/admin/assessment/:id</span> · Research &amp; Report</div>
+      <div class="screen-body">
+        <div class="wf-admin-header">
+          <h2>Admin Command Center · OrderSvc</h2>
+          <div class="wf-admin-tabs"><span class="tab">Assessments</span><span class="tab">Knowledge Base</span></div>
+        </div>
+        <div style="padding: 1.25rem;">
+          <div style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Approach document (from Research)</h3>
+            <p style="font-size: 0.85rem; color: var(--wire-muted);">Scrollable; can re-run research or add manual input.</p>
+          </div>
+          <div style="border: 1px dashed var(--wire-border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Assessment report (edit &amp; enhance)</h3>
+            <p style="font-size: 0.85rem; color: var(--wire-muted); margin-bottom: 0.5rem;">Generated report – rich text or markdown editor. Save changes.</p>
+            <textarea rows="6" style="width: 100%; padding: 0.5rem; border: 1px dashed var(--wire-border); border-radius: 6px;" placeholder="Report content..."></textarea>
+            <div style="margin-top: 0.5rem;"><button class="btn">Save edits</button> <button class="btn" style="background: var(--green);">Download DOCX</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Admin Knowledge Base -->
+    <section id="admin-kb" class="screen">
+      <div class="screen-header">Wireframe 7 · <span class="route">/admin</span> · Knowledge Base tab</div>
+      <div class="screen-body" style="padding: 0;">
+        <div class="wf-admin-header">
+          <h2>Admin Command Center</h2>
+          <div class="wf-admin-tabs"><span class="tab">Assessments</span><span class="tab active">Knowledge Base</span></div>
+          <div class="wf-admin-actions"><button class="btn-sm">Refresh</button><button class="btn-sm">Export</button></div>
+        </div>
+        <div class="wf-panels" style="padding: 1.25rem;">
+          <div class="wf-panel"><div class="title">KB Config &amp; Seed</div><div class="content">Project dir, index name, usage stats</div><button class="btn btn-sm">Run seed</button></div>
+          <div class="wf-panel"><div class="title">Manifest / Usage</div><div class="content">Document count, index stats, embedding usage</div></div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--wire-border-light); font-size: 0.85rem; color: var(--wire-muted);">
+      <p>Wireframes · Two-role flow: Application User (profile → submit → confirmation); Admin (submissions list → open → research → report → edit → download). Pending implementation.</p>
+    </footer>
+  </div>
+</body>
+</html>
