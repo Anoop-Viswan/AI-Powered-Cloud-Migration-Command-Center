@@ -49,7 +49,7 @@ Doing CI before deploy avoids shipping a broken build and then having to fix the
   - **backend-tests:** Python 3.11, install from `requirements.txt`, run `pytest tests/ -m "not external"`. Skips interface connectivity tests (Pinecone, LLM, Tavily, Mermaid.ink) so no API keys are needed. `LANGCHAIN_TRACING_V2=false` so no LangSmith in CI.
   - **frontend-build:** Node 20, `npm ci` + `npm run build` in `frontend/` so the same steps as the Dockerfile succeed.
 - **No secrets required** for CI; tests use mocks and in-memory SQLite.
-- **Interface checks:** Run **before push** locally: `python scripts/verify_setup.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [Setup-and-Reference/Interface-Tests.md](../Setup-and-Reference/Interface-Tests.md). To see what checks ran and full error output: [Viewing-CI-Logs-and-Errors.md](Viewing-CI-Logs-and-Errors.md). With GitHub Secrets set, the optional `interface-checks` job runs in CI (see “Main branch and interface verification” above).
+- **Interface checks:** Run **before push** locally: `python scripts/verify_setup.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [Setup-and-Reference/Interface-Tests.md](../Setup-and-Reference/Interface-Tests.md). To see what checks ran and full error output: [Viewing-CI-Logs-and-Errors.md](Viewing-CI-Logs-and-Errors.md). Re-run tests without code change and where CI gets config (Secrets vs Variables): [CI-Config-and-Rerun.md](CI-Config-and-Rerun.md). With GitHub Secrets set, the optional `interface-checks` job runs in CI (see “Main branch and interface verification” above).
 
 ### CD (Render)
 

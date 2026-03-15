@@ -18,7 +18,7 @@ This guide walks through deploying this app to [Render](https://render.com) usin
 
 ## CI/CD
 
-We recommend **turning on CI before the first deploy**: see [CICD_PIPELINE.md](CICD_PIPELINE.md). The repo includes `.github/workflows/ci.yml` (tests + frontend build). After that, connect this repo to Render so only green builds get deployed.
+We recommend **turning on CI before the first deploy**: see [CICD-Pipeline.md](CICD-Pipeline.md). The repo includes `.github/workflows/ci.yml` (tests + frontend build). After that, connect this repo to Render so only green builds get deployed.
 
 ---
 
@@ -49,28 +49,51 @@ We recommend **turning on CI before the first deploy**: see [CICD_PIPELINE.md](C
 
 ---
 
-## Step 3: Add environment variables (API keys and config)
+## Step 3: Add environment variables (all config comes from here)
 
-In the same screen, open the **Environment** section and add variables. Render injects these at **runtime** (they are not baked into the image). For secrets, use **Secret Files** or mark values as **Secret** so they are masked in the UI.
+**On Render, every config value comes from the Render dashboard.** There is no `.env` file in the container. The app reads the same variable names via `os.environ`; you set them in **Dashboard → your Web Service → Environment**.
 
-**Local vs cloud:** Locally you use a `.env` file; on Render you use the dashboard env vars (no `.env` in the image). For Azure Key Vault or AWS Secrets Manager, see [Secrets-in-Cloud.md](Secrets-in-Cloud.md).
+### Where to set them
 
-Add every key your app needs. Example (adjust names to match your `.env`):
+1. In the Render dashboard, open your **Web Service** (or the creation form for a new one).
+2. Go to the **Environment** section.
+3. For each variable below: click **Add Environment Variable**, enter the **Key** (exact name), enter the **Value**, and turn **Secret** on for API keys and tokens.
+4. Click **Save Changes** when done. Render will redeploy if the service already exists.
 
-| Key | Value | Secret? |
-|-----|--------|--------|
-| `PINECONE_API_KEY` | Your Pinecone API key | Yes |
-| `OPENAI_API_KEY` | Your OpenAI API key | Yes |
-| `TAVILY_API_KEY` | Your Tavily API key (if you use research/Tavily) | Yes |
-| `LANGCHAIN_TRACING_V2` | `true` (optional, for LangSmith) | No |
-| `LANGCHAIN_API_KEY` | Your LangSmith API key (optional) | Yes |
-| `LANGCHAIN_PROJECT` | `assessment` (optional) | No |
-| `ALLOWED_ORIGINS` | `https://<your-service-name>.onrender.com` | No |
+### All config: what to set (copy from your .env)
 
-- **ALLOWED_ORIGINS:** Replace `<your-service-name>` with the exact name you gave the service (e.g. `https://coe-migration-app.onrender.com`). Add more origins separated by commas if you use a custom domain later.
-- **Optional (e.g. Azure/Anthropic):** Add `LLM_PROVIDER`, `ANTHROPIC_API_KEY`, `AZURE_OPENAI_*`, etc., if you use them locally.
+Use the same names and values you have in `.env` locally. Mark as **Secret** in Render for any key or token.
 
-To add a variable: click **Add Environment Variable**, enter the key, paste the value, and turn **Secret** on for API keys and tokens.
+| Key | Required? | Example / notes | Secret? |
+|-----|-----------|------------------|--------|
+| **PINECONE_API_KEY** | Yes | From [app.pinecone.io](https://app.pinecone.io/) | Yes |
+| **OPENAI_API_KEY** | If using OpenAI | From [platform.openai.com](https://platform.openai.com/) | Yes |
+| **OPENAI_MODEL** | No | `gpt-4o-mini` (default) or `gpt-4o` | No |
+| **LLM_PROVIDER** | No | `openai` (default), `anthropic`, or `azure_openai` | No |
+| **TAVILY_API_KEY** | For official-doc search | From [app.tavily.com](https://app.tavily.com/); skip if not using | Yes |
+| **LANGCHAIN_TRACING_V2** | No | `true` to enable LangSmith | No |
+| **LANGCHAIN_API_KEY** | If tracing | From [smith.langchain.com](https://smith.langchain.com/) | Yes |
+| **LANGCHAIN_PROJECT** | No | e.g. `assessment` | No |
+| **ANTHROPIC_API_KEY** | If LLM_PROVIDER=anthropic | From [console.anthropic.com](https://console.anthropic.com/) | Yes |
+| **ANTHROPIC_MODEL** | No | e.g. `claude-3-5-sonnet-20241022` | No |
+| **AZURE_OPENAI_ENDPOINT** | If LLM_PROVIDER=azure_openai | Your Azure OpenAI endpoint URL | Yes |
+| **AZURE_OPENAI_API_KEY** | If LLM_PROVIDER=azure_openai | Azure API key | Yes |
+| **AZURE_OPENAI_DEPLOYMENT** | If LLM_PROVIDER=azure_openai | Deployment name (e.g. `gpt-4o-mini`) | No |
+| **PINECONE_PROJECT_DIR** | No | e.g. `/data` if you mount docs; optional | No |
+| **PINECONE_SPEND_LIMIT** | No | Default `10` (dollars) | No |
+| **ALLOWED_ORIGINS** | Yes for CORS | `https://<your-service-name>.onrender.com` (see below) | No |
+| **OPENAI_TEMPERATURE** | No | Default `0.3` | No |
+| **OPENAI_MAX_TOKENS** | No | Default `4096` | No |
+| **RESEARCH_KB_MIN_SCORE** | No | Default `0.5` | No |
+| **RESEARCH_KB_CONFIDENCE_LOW** | No | Default `0.35` | No |
+| **RESEARCH_OFFICIAL_DOCS_ENABLED** | No | `true` or `false` | No |
+| **PROFILE_VALIDATION_USE_LLM** | No | `yes` or leave unset | No |
+| **PROFILE_CONTENT_VALIDATION_USE_LLM** | No | `true` (default) or `false` | No |
+
+- **ALLOWED_ORIGINS:** Set to `https://<your-service-name>.onrender.com` (replace with your actual service name, e.g. `https://coe-migration-app.onrender.com`). Add more origins separated by commas if you use a custom domain.
+- **Optional:** If you don’t set a variable, the app uses the same defaults as in `.env.example` (e.g. `OPENAI_MODEL` → `gpt-4o-mini`). Full list: [Setup-and-Reference/ENV-Reference.md](../Setup-and-Reference/ENV-Reference.md).
+
+**Local vs Render:** Locally you use a `.env` file; on Render you use only the Environment section above (no `.env` in the image). For Azure Key Vault or AWS Secrets Manager, see [Secrets-in-Cloud.md](Secrets-in-Cloud.md).
 
 ---
 
