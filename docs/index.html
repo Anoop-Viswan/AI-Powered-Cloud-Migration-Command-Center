@@ -363,6 +363,14 @@
     .lesson-item h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
     .lesson-item p { font-size: 0.9rem; margin-bottom: 0; }
     .lesson-item code { background: var(--bg-alt); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
+
+    /* Documentation links table */
+    .doc-links { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem; }
+    .doc-links th, .doc-links td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+    .doc-links th { font-weight: 600; color: var(--text); background: var(--bg-alt); }
+    .doc-links td { color: var(--text-muted); }
+    .doc-links a { color: var(--accent); font-weight: 500; }
+    .doc-links a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -373,6 +381,7 @@
         <a href="#overview">Overview</a>
         <a href="#modules">Modules</a>
         <a href="#design">Design</a>
+        <a href="#docs">All docs</a>
         <a href="#timeline">Timeline</a>
         <a href="#tools">Tools</a>
         <a href="#lessons">Lessons</a>
@@ -404,10 +413,10 @@
       <span class="section-label">Overview</span>
       <h2>One assistant for the whole migration journey</h2>
       <p>
-        This project delivers an AI-powered Migration Assistant that helps teams assess, plan, and execute application migrations. It uses a <strong>two-role flow</strong>: Application Users submit migration requests (app profile data); Admins run research, generate and edit reports, and download. It combines a vector-backed Knowledge Base (KB) with optional LLM summarization and a phased roadmap from ideation to production.
+        <strong>Cloud Migration Command Center (CMCC)</strong> is an AI-powered migration command center: a <strong>Knowledge Base</strong> (semantic search over migration docs via Pinecone), <strong>Assessment</strong> (app profile → research → report with optional Tavily for official-doc search), and <strong>Admin &amp; Diagnostics</strong> (run research, view reports, monitor LLM/tool usage). Admin screens are protected by username/password; the app is deployable to cloud (e.g. Render) with CI/CD via GitHub Actions.
       </p>
       <p>
-        The assistant supports migration practitioners and CoE teams with semantic search over migration artifacts, chat over the KB, and structured workflows for assessment and planning.
+        The system uses a <strong>two-role flow</strong>: Application Users submit migration requests (profile data, validation); Admins run research (KB first, then optional web search), generate and edit reports, run quality checks, and download. All design docs, wireframes, and this project narrative are in the <a href="#docs">documentation section</a> below.
       </p>
     </div>
   </section>
@@ -421,27 +430,27 @@
         <div class="module">
           <div class="module-icon">📚</div>
           <h3>Knowledge Base (KB)</h3>
-          <p>Vector-backed semantic search over migration documents (PDF, DOCX, XLSX, CSV, PPTX, and text). Chat with optional LLM summarization and admin controls for indexing and configuration.</p>
+          <p>Vector-backed semantic search over migration documents (PDF, DOCX, XLSX, CSV, PPTX, text). Pinecone index, embeddings, optional LLM summarization (RAG). Admin controls for indexing and configuration; spend guardrails.</p>
         </div>
         <div class="module">
           <div class="module-icon">🔍</div>
           <h3>Assessment (Migration Request)</h3>
-          <p>Two-role flow: Application Users submit app profile (data collection, validation); Admins run research (KB + optional web), generate and edit reports, and download. Multi-agent system for research and summarization.</p>
+          <p>Two-role flow: Application Users submit app profile (mandatory fields, validation, sanity checks); Admins run research (KB confidence + explainability, optional Tavily for official docs), generate reports, target-state diagram (LLM + HITL), quality check (score + reasons), edit, and download.</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">📊</div>
+          <h3>Admin &amp; Diagnostics</h3>
+          <p>Admin command center: list of assessments, run research/generate report, KB config. <strong>Diagnostics tab:</strong> track LLM, Tavily, Pinecone calls; duration; approximate cost; configurable thresholds and alerts; request log and drill-down. Optional LangSmith tracing.</p>
+        </div>
+        <div class="module">
+          <div class="module-icon">🔐</div>
+          <h3>Admin authentication</h3>
+          <p>Admin screens protected by username/password (env: <code>ADMIN_USERNAME</code>, <code>ADMIN_PASSWORD</code>). Session cookie; login/logout/me endpoints. TOTP/MFA planned for a later iteration.</p>
         </div>
         <div class="module">
           <div class="module-icon">📋</div>
-          <h3>Planning</h3>
-          <p>Data collection and planning workflows: timelines, dependencies, and work breakdown structures (WBS) or project plans.</p>
-        </div>
-        <div class="module">
-          <div class="module-icon">🚀</div>
-          <h3>Migration Implementation</h3>
-          <p>Guided implementation checklists and runbooks (placeholder for future expansion).</p>
-        </div>
-        <div class="module">
-          <div class="module-icon">🛟</div>
-          <h3>Support</h3>
-          <p>Post-migration support and handover artifacts (placeholder for future expansion).</p>
+          <h3>Planning &amp; Execution</h3>
+          <p>Placeholders for future runbooks, checklists, and post-migration artifacts.</p>
         </div>
       </div>
     </div>
@@ -451,37 +460,31 @@
     <div class="wrap">
       <span class="section-label">Design</span>
       <h2>How it works</h2>
-      <p><a href="ARCHITECTURE_DESIGN.html" style="color: var(--accent); font-weight: 600;">Architecture & Design (umbrella)</a> – Single entry point for all design docs: decision matrix, wireframes, assessment design, admin design, deployment.</p>
-      <p><strong>Knowledge Base:</strong> The KB is built on a Vector DB (Pinecone) with integrated embeddings. User queries are run against the index; optionally, retrieved chunks are sent to an LLM for summarization into a single answer (RAG).</p>
-      <div class="diagram" aria-label="KB design: Vector DB and LLM summarization">
-        <svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-              <path d="M0 0 L10 3 L0 6 Z" fill="#6b7280" />
-            </marker>
-          </defs>
-          <rect x="20" y="70" width="100" height="56" rx="6" stroke="#e5e7eb" stroke-width="1.5" fill="#f6f8fa" />
-          <text x="70" y="102" text-anchor="middle" fill="#1f2937" font-size="12" font-family="system-ui">Documents</text>
-          <text x="70" y="116" text-anchor="middle" fill="#6b7280" font-size="10">PDF, DOCX, etc.</text>
-          <path d="M 140 98 L 220 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
-          <rect x="230" y="50" width="120" height="96" rx="8" stroke="#0d9488" stroke-width="1.5" fill="rgba(13,148,136,0.08)" />
-          <text x="290" y="82" text-anchor="middle" fill="#0d9488" font-size="13" font-weight="600">Vector DB</text>
-          <text x="290" y="100" text-anchor="middle" fill="#6b7280" font-size="11">(Pinecone)</text>
-          <text x="290" y="118" text-anchor="middle" fill="#6b7280" font-size="10">Embeddings</text>
-          <text x="290" y="132" text-anchor="middle" fill="#6b7280" font-size="10">+ Index</text>
-          <path d="M 360 98 L 420 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
-          <rect x="430" y="70" width="90" height="56" rx="6" stroke="#e5e7eb" stroke-width="1.5" fill="#f6f8fa" />
-          <text x="475" y="98" text-anchor="middle" fill="#1f2937" font-size="12">Search</text>
-          <text x="475" y="114" text-anchor="middle" fill="#6b7280" font-size="10">Query → Hits</text>
-          <path d="M 530 98 L 590 98" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)" />
-          <rect x="500" y="160" width="180" height="48" rx="6" stroke="#7c3aed" stroke-width="1.5" fill="rgba(124,58,237,0.08)" />
-          <text x="590" y="182" text-anchor="middle" fill="#7c3aed" font-size="12" font-weight="600">LLM Summarization</text>
-          <text x="590" y="198" text-anchor="middle" fill="#6b7280" font-size="10">(optional) Answer</text>
-          <path d="M 475 126 L 550 160" stroke="#6b7280" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrow)" />
-          <text x="505" y="148" fill="#6b7280" font-size="9">chunks</text>
-        </svg>
-      </div>
-      <p><strong>Assessment (Migration Request):</strong> Two roles: Application Users fill the profile and submit for assessment (no research or report); Admins view submissions, run research (KB + optional manual input), generate reports, edit/enhance, and download. Multi-agent system (Research Agent, Summarizer) runs in the Admin flow only.</p>
+      <p><strong>Knowledge Base:</strong> Documents are extracted, chunked, and embedded; the Vector DB (Pinecone) serves semantic search. Queries return chunks; optionally an LLM summarizes them into a single answer (RAG).</p>
+      <p><strong>Assessment:</strong> Application Users complete the profile (overview, architecture, data, BC/DR, security); validation and sanity checks run before submit. Admins see submissions, run research (KB first with confidence and “why match,” then optional Tavily for official docs), then generate report (narrative + target-state diagram). Diagram uses an LLM design phase, optional human-in-the-loop clarification, then Mermaid → PNG; report includes quality check (score per criterion). Re-run research or regenerate report clears prior artifacts and rebuilds.</p>
+      <p>All architecture and design documents (including wireframes) are listed in the <a href="#docs">All docs</a> section below.</p>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="wrap">
+      <span class="section-label">Documentation</span>
+      <h2>All design documentation (HTML)</h2>
+      <p>These are the current design and wireframe documents. Each link opens the corresponding HTML page.</p>
+      <table class="doc-links">
+        <thead>
+          <tr><th>Document</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><a href="Architecture-and-Design/Architecture.html">Architecture</a></td><td>System architecture: components, data flow, decisions.</td></tr>
+          <tr><td><a href="Architecture-and-Design/Decision-Matrix.html">Decision Matrix</a></td><td>Technology and framework choices (vector DB, LLM, etc.).</td></tr>
+          <tr><td><a href="Architecture-and-Design/Wireframes.html">Wireframes</a></td><td>Main app wireframes and flows.</td></tr>
+          <tr><td><a href="Architecture-and-Design/Assessment-Design.html">Assessment Design</a></td><td>Assessment module and UI design.</td></tr>
+          <tr><td><a href="Architecture-and-Design/Admin-Command-Center-Design.html">Admin Command Center Design</a></td><td>Admin UI: assessments list, research, report, KB.</td></tr>
+          <tr><td><a href="Architecture-and-Design/Diagnostics-Wireframes.html">Diagnostics Wireframes</a></td><td>Diagnostics tab: interfaces, thresholds, request log, patterns.</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 1.25rem;">Markdown docs (setup, deployment, guides, development narrative) live in the repo under <code>docs/</code>. See <a href="https://github.com/Anoop-Viswan/AI-Powered-Cloud-Migration-Command-Center/blob/main/docs/README.md">docs/README.md</a> in the repository for the full index. Key areas: <strong>Setup-and-Reference</strong> (one-time setup, env, interface tests), <strong>Deployment</strong> (Render, CI/CD, secrets), <strong>Guides</strong> (Pinecone, SQLite, Pydantic, tool extension), <strong>Development-Iterations</strong> (AI-assisted narrative, phase plans).</p>
     </div>
   </section>
 
@@ -489,7 +492,7 @@
     <div class="wrap-wide">
       <span class="section-label">Roadmap</span>
       <h2>Project timeline &amp; story</h2>
-      <p class="timeline-intro">A four-weekend journey from ideation to a production-ready Migration Assistant—each phase builds on the last with clear outcomes.</p>
+      <p class="timeline-intro">Iterative journey from ideation to a production-ready Migration Command Center—design first, then implementation; each phase added transparency, explainability, and operational readiness.</p>
 
       <div class="timeline">
         <div class="timeline-line" aria-hidden="true"></div>
@@ -499,15 +502,15 @@
           <div class="timeline-card">
             <div class="timeline-card-inner">
               <div class="timeline-meta">
-                <span class="timeline-week">Weekend 1</span>
-                <h3 class="timeline-title">Ideation, design &amp; Knowledge Base</h3>
+                <span class="timeline-week">Phase 1</span>
+                <h3 class="timeline-title">Foundation, flexibility &amp; Knowledge Base</h3>
                 <div class="timeline-img-wrap">
                   <img class="timeline-img" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80" alt="Planning and design" width="600" height="340" />
                 </div>
               </div>
               <div class="timeline-content">
-                <p>We started with a clear goal: give migration teams one place to search and chat over their documents. Initial ideation and design led to implementing the Knowledge Base—vector index, document ingestion (PDF, DOCX, XLSX, CSV, PPTX), semantic search, and basic chat with optional LLM summarization.</p>
-                <div class="outcome"><strong>Outcome:</strong> Working KB with Pinecone, embeddings, and RAG-ready chat.</div>
+                <p>LLM provider abstraction (OpenAI, Anthropic, Azure); umbrella design doc with links to wireframes and decision matrix. Knowledge Base: Pinecone vector index, document extractors (PDF, DOCX, XLSX, CSV, PPTX), semantic search, chat with optional LLM summarization. Document extractors for binary formats; field standardization (e.g. <code>content</code>) and reranker token-limit fallback.</p>
+                <div class="outcome"><strong>Outcome:</strong> Working KB and flexible LLM/config; design docs consolidated.</div>
               </div>
             </div>
           </div>
@@ -518,15 +521,15 @@
           <div class="timeline-card">
             <div class="timeline-card-inner">
               <div class="timeline-meta">
-                <span class="timeline-week">Weekend 2</span>
-                <h3 class="timeline-title">Assessment multi-agent RAG</h3>
+                <span class="timeline-week">Phase 2</span>
+                <h3 class="timeline-title">Assessment, two-role flow &amp; research</h3>
                 <div class="timeline-img-wrap">
                   <img class="timeline-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data and analytics" width="600" height="340" />
                 </div>
               </div>
               <div class="timeline-content">
-                <p>With the KB in place, assessment uses a two-role flow: Application Users submit migration requests (profile); Admins run multi-agent RAG (research over KB, summarization, report generation), edit reports, and download. This keeps the flow scalable and separates request intake from CoE execution.</p>
-                <div class="outcome"><strong>Outcome:</strong> Two-role migration request flow with Admin-driven research and report generation.</div>
+                <p>Assessment module: mandatory fields, validation per section, RTO/RPO hints, sanity and LLM-based content validation. Two-role pivot: Application User (submit only) and Admin (view, research, report). Research flow: KB first with confidence and explainability (“why match”); below threshold → Tavily for official docs; streaming SSE; Tool Gateway for extensibility. Report generation with quality check (score + reason per criterion); target-state diagram (LLM design phase, HITL clarification, Mermaid → PNG). Cleanup on re-run research/regenerate report.</p>
+                <div class="outcome"><strong>Outcome:</strong> Two-role flow, research with transparency, quality check, diagram, and full cleanup.</div>
               </div>
             </div>
           </div>
@@ -537,15 +540,15 @@
           <div class="timeline-card">
             <div class="timeline-card-inner">
               <div class="timeline-meta">
-                <span class="timeline-week">Weekend 3</span>
-                <h3 class="timeline-title">PoC to production</h3>
+                <span class="timeline-week">Phase 3</span>
+                <h3 class="timeline-title">Config, feature status &amp; Diagnostics</h3>
                 <div class="timeline-img-wrap">
                   <img class="timeline-img" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80" alt="Development and deployment" width="600" height="340" />
                 </div>
               </div>
               <div class="timeline-content">
-                <p>We hardened the system for production: guardrails, security, scalability, deployment, Dockerization, and observability (logging, metrics, alerts). The assistant moved from “it works on my machine” to “ready for teams.”</p>
-                <div class="outcome"><strong>Outcome:</strong> Production-ready deployment and observability.</div>
+                <p>Feature-status API so the UI shows when LangChain/LangSmith/Tavily are unavailable (API keys, limits). .env load-once, reload-on-demand; exact Tavily errors surfaced. Diagnostics tab: track LLM, Tavily, Pinecone—call counts, duration, approximate cost; configurable thresholds and alerts; request log with drill-down; usage patterns. Optional LangSmith tracing.</p>
+                <div class="outcome"><strong>Outcome:</strong> No silent failures; in-app diagnostics and observability.</div>
               </div>
             </div>
           </div>
@@ -556,15 +559,15 @@
           <div class="timeline-card">
             <div class="timeline-card-inner">
               <div class="timeline-meta">
-                <span class="timeline-week">Weekend 4</span>
-                <h3 class="timeline-title">Functionality &amp; enhancements</h3>
+                <span class="timeline-week">Phase 4</span>
+                <h3 class="timeline-title">Deployment, CI/CD &amp; Admin auth</h3>
                 <div class="timeline-img-wrap">
                   <img class="timeline-img" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Collaboration and growth" width="600" height="340" />
                 </div>
               </div>
               <div class="timeline-content">
-                <p>We added polish and extensions: planning module improvements, migration implementation and support placeholders, UX refinements, and documentation. The result is a cohesive CoE assistant you can extend further.</p>
-                <div class="outcome"><strong>Outcome:</strong> Full CoE assistant with docs and UX polish.</div>
+                <p>Docs reorganized (Architecture-and-Design, Setup-and-Reference, Deployment, Guides, Development-Iterations); rebrand to Cloud Migration Command Center. Docker image; deploy to Render with env-based config and secrets. GitHub Actions CI: backend tests, frontend build; optional interface-checks job (verify_setup.py) when repo variable set. Branch protection so merge requires green CI. Admin authentication: username/password, session cookie, login/logout/me; AdminGuard and login page in frontend.</p>
+                <div class="outcome"><strong>Outcome:</strong> Cloud deployment, CI/CD, and protected Admin screens.</div>
               </div>
             </div>
           </div>
@@ -597,19 +600,55 @@
     <div class="wrap">
       <span class="section-label">Lessons learnt</span>
       <h2>Challenges and how we fixed them</h2>
-      <p>Issues we faced during development and the approaches that worked.</p>
+      <p>These lessons come from the iterative, AI-assisted development of this project. They reflect the kinds of guidance that shaped the product and what worked when things went wrong.</p>
       <div class="lessons-list">
         <div class="lesson-item">
-          <h3>Start small: local first, then scale</h3>
-          <p>We focused on local deployment and a working end-to-end flow before scaling to cloud deployments and packaging. This avoided big-bang complexity and made it easier to debug and iterate. Moving to Docker and production came only after the core KB, search, and chat were stable.</p>
+          <h3>Design before code</h3>
+          <p>When behavior or flow is non-trivial (research flow, diagram, tools), lock the design in writing first. Ask for a blueprint or design doc and approve it before implementation. We did this for the research flow, diagram design, and tool gateway; it avoided rework and kept behavior consistent.</p>
         </div>
         <div class="lesson-item">
-          <h3>PDF and DOCX aren’t supported by default</h3>
-          <p>Vector indexes and embedding APIs work on text; PDF and Word (.docx) are binary formats, so they can’t be indexed without extraction. We added a <strong>document extractor</strong> layer that uses appropriate libraries (e.g. PyMuPDF for PDF, python-docx for DOCX) to pull out plain text (and structure where useful) before chunking and embedding. That way all project documents can be ingested into the Knowledge Base.</p>
+          <h3>Transparency over silence</h3>
+          <p>All steps need to be informed—no silent failures. We added a feature-status API so the UI shows when LangChain/LangSmith/Tavily are not running (API keys, limits). Live SSE steps show what the LLM and tools are doing (timings, key results). Exact Tavily (and other) errors are surfaced instead of generic messages.</p>
         </div>
         <div class="lesson-item">
-          <h3>Field mapping (text vs content) and re-indexing token issues</h3>
-          <p>We hit mismatches between the field names used when indexing (e.g. <code>text</code> or <code>content</code>) and what the search/rerank pipeline expected, which led to empty or wrong results. We fixed it by standardizing on a single field (e.g. <code>content</code>) for the body text and ensuring the frontend and backend both read that field. Re-indexing then surfaced <strong>token limit errors</strong> with the reranker (e.g. bge-reranker has a max input length); we added a fallback that retries search without rerank when the reranker fails due to token limits, so long chunks don’t break the flow.</p>
+          <h3>Explainability for decisions</h3>
+          <p>Users and operators need to see <em>why</em> something happened. The quality check returns a score and a reason per criterion (comprehensive, actionable, useful, diagrams). KB hits include “why match” (origin/destination, features). Research shows key results before synthesis so you can see what was extracted and used.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Professional standards, not generic output</h3>
+          <p>When the target-state diagram was “nonsense,” we switched to an LLM-first design phase with reference-architecture guidelines, then Mermaid → PNG. We deliver real artifacts (e.g. .mmd + PNG) and embed them in the report and DOCX, not just markdown.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Clean state on re-run</h3>
+          <p>When the user runs research again or regenerates the report, clear everything and rebuild. We clear approach, report, QC, research_details, and diagram folder on “Run research”; clear report and QC on “Generate/Regenerate report.” Re-running never leaves stale data or UI.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Human-in-the-loop when accuracy matters</h3>
+          <p>If the model might need more data (e.g. for the diagram), expose clarification questions in the UI and let the user answer or “proceed anyway.” We use this in the diagram design phase so reports stay accurate when the profile is ambiguous.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Validation and sanity checks</h3>
+          <p>Mandatory fields, section-level validation, and LLM-based content checks prevent junk input. We added RTO/RPO hints, validation gates before submit, and sanity checks so unreasonable values (e.g. 10000 h RTO) are flagged and confirmed with the user.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Config and .env clarity</h3>
+          <p>Load .env once at startup; provide a “reload .env” endpoint so config changes don’t require a full restart. Document where every variable comes from (local .env, Render env, GitHub Secrets/Variables for CI). We documented this in ENV-Reference and Deploy-Render so deployers know exactly what to set.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Extensibility from day one</h3>
+          <p>A standard tool gateway (direct, MCP, UTC) makes it easier to add Tavily, Teams, WhatsApp, email later. We put Tavily and LLM behind the same patterns and wrote an extension guide so new tools follow a consistent contract.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>CI: secrets vs variables</h3>
+          <p>In GitHub Actions, use <strong>Secrets</strong> for API keys and <strong>Variables</strong> for flags (e.g. RUN_INTERFACE_CHECKS). Job-level <code>if</code> cannot depend on secrets in some contexts; use a repo variable to gate the interface-checks job. Pass optional config (e.g. OPENAI_MODEL) via variables so CI can run with defaults or overrides.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Tests and protected routes</h3>
+          <p>When we added admin auth, tests that call admin/diagnostics endpoints started getting 401. We disable admin auth in tests by clearing <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> in the test client fixtures so the same app instance serves both protected (production) and unprotected (test) behavior.</p>
+        </div>
+        <div class="lesson-item">
+          <h3>Document extraction and token limits</h3>
+          <p>Vector indexes need text; PDF/DOCX are binary. We added a document extractor layer (PyMuPDF, python-docx, etc.) before chunking and embedding. We also standardized on one field (e.g. <code>content</code>) for body text and added a fallback when the reranker hits token limits so long chunks don’t break search.</p>
         </div>
       </div>
     </div>
@@ -618,7 +657,7 @@
   <footer>
     <div class="wrap">
       <p><strong>Cloud Migration Command Center</strong> · Center of Excellence · Vector KB + LLM</p>
-      <p><a href="https://github.com">Repository</a></p>
+      <p><a href="https://github.com/Anoop-Viswan/AI-Powered-Cloud-Migration-Command-Center">Repository</a></p>
       <p class="attribution">Hero and timeline images from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a> (free to use).</p>
     </div>
   </footer>
