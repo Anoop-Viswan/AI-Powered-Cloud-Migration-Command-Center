@@ -38,10 +38,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: List tests that will run (backend)
+        env:
+          LANGCHAIN_TRACING_V2: "false"
+        run: |
+          echo "=== Backend tests (excluding external API checks) ==="
+          pytest tests/ -m "not external" --collect-only -q
+          echo "--- Running tests next (see step below for results and any failures) ---"
+
       - name: Run tests (excluding external API checks)
         env:
           LANGCHAIN_TRACING_V2: "false"
-        run: pytest tests/ -m "not external" -v --tb=short
+        run: |
+          pytest tests/ -m "not external" -v --tb=long -ra
+          echo "=== Backend test run finished ==="
 
   frontend-build:
     runs-on: ubuntu-latest
@@ -60,19 +70,22 @@ jobs:
       - name: Install and build frontend
         working-directory: frontend
         run: |
+          echo "=== Frontend: install and build (npm ci + npm run build) ==="
           npm ci
           npm run build
+          echo "=== Frontend build finished ==="
 
   # Optional: run ALL interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) in CI.
   # When this job runs, it runs verify_setup.py which checks every interface, not just Pinecone.
   #
-  # When does this job run? Set a repository VARIABLE (not secret): Settings → Actions → Variables →
-  # Add variable RUN_INTERFACE_CHECKS = "true" (or "1"). Job runs only when this variable is set.
-  # Add the API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) under Actions → Secrets.
-  # Require this job in branch protection so main only merges when all required interfaces pass.
+  # IMPORTANT – use a repository VARIABLE, not a Secret:
+  #   GitHub repo → Settings → Secrets and variables → Actions → VARIABLES tab (not "Secrets") →
+  #   New repository variable: Name = RUN_INTERFACE_CHECKS, Value = true (or 1 or yes).
+  # If you add RUN_INTERFACE_CHECKS as a Secret, this job will stay skipped (we cannot read secrets in "if").
+  # Also add API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) under the Secrets tab.
   interface-checks:
     runs-on: ubuntu-latest
-    if: ${{ vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' }}
+    if: ${{ vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' || vars.RUN_INTERFACE_CHECKS == 'True' || vars.RUN_INTERFACE_CHECKS == 'TRUE' || vars.RUN_INTERFACE_CHECKS == 'yes' || vars.RUN_INTERFACE_CHECKS == 'Yes' || vars.RUN_INTERFACE_CHECKS == 'YES' }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
@@ -100,4 +113,7 @@ jobs:
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
           AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
-        run: python scripts/verify_setup.py
+        run: |
+          echo "=== Interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) ==="
+          python -u scripts/verify_setup.py
+          echo "=== Interface checks finished ==="

@@ -24,7 +24,7 @@ Optional: run the interface job only when secrets are present (e.g. `if: ${{ sec
 
 **What we ship:** The workflow includes an optional job `interface-checks` that runs **all** interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink)—not just Pinecone. It runs `verify_setup.py`, so when the job runs, every interface is verified.
 
-**When does the job run?** Set a repository **variable** (not a secret): **Settings → Secrets and variables → Actions → Variables** → add **`RUN_INTERFACE_CHECKS`** with value `true` (or `1`). The job runs only when this variable is set. (Secrets cannot be used in the job `if` condition.) Then add the API key secrets you use (e.g. `PINECONE_API_KEY`, `OPENAI_API_KEY`, `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`, and Azure vars if you use Azure OpenAI). The job runs on every PR/push and checks every interface; required (Pinecone, LLM) must pass.
+**When does the job run?** You must set a repository **variable** (not a secret). In GitHub: **Settings → Secrets and variables → Actions** → open the **Variables** tab (not "Secrets") → **New repository variable** → Name: **`RUN_INTERFACE_CHECKS`**, Value: **`true`** (or `1` or `yes`). If you add `RUN_INTERFACE_CHECKS` as a **Secret**, the job will stay **skipped** because the workflow cannot read secrets in the job `if` condition. Then add the API key **secrets** you use (e.g. `PINECONE_API_KEY`, `OPENAI_API_KEY`) under the **Secrets** tab. Once the variable is set, the job runs on every PR/push and checks every interface; required (Pinecone, LLM) must pass.
 
 **Secrets to add** (GitHub → Settings → Secrets and variables → Actions): At minimum, the ones your app uses: `PINECONE_API_KEY`, `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` / Azure vars). Optionally: `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`. The job passes them into `verify_setup.py`; if a required interface is missing or invalid, the job fails with the same detailed messages as when you run the script locally. Add **interface-checks** as a required status for `main` in branch protection so main stays deploy-ready.
 
@@ -49,7 +49,7 @@ Doing CI before deploy avoids shipping a broken build and then having to fix the
   - **backend-tests:** Python 3.11, install from `requirements.txt`, run `pytest tests/ -m "not external"`. Skips interface connectivity tests (Pinecone, LLM, Tavily, Mermaid.ink) so no API keys are needed. `LANGCHAIN_TRACING_V2=false` so no LangSmith in CI.
   - **frontend-build:** Node 20, `npm ci` + `npm run build` in `frontend/` so the same steps as the Dockerfile succeed.
 - **No secrets required** for CI; tests use mocks and in-memory SQLite.
-- **Interface checks:** Run **before push** locally: `python scripts/verify_setup.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [Setup-and-Reference/Interface-Tests.md](../Setup-and-Reference/Interface-Tests.md). With GitHub Secrets set, the optional `interface-checks` job runs in CI (see “Main branch and interface verification” above).
+- **Interface checks:** Run **before push** locally: `python scripts/verify_setup.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [Setup-and-Reference/Interface-Tests.md](../Setup-and-Reference/Interface-Tests.md). To see what checks ran and full error output: [Viewing-CI-Logs-and-Errors.md](Viewing-CI-Logs-and-Errors.md). With GitHub Secrets set, the optional `interface-checks` job runs in CI (see “Main branch and interface verification” above).
 
 ### CD (Render)
 
@@ -61,9 +61,9 @@ Doing CI before deploy avoids shipping a broken build and then having to fix the
 
 ## Enforcing “deploy only when CI passes”
 
-1. GitHub repo → **Settings** → **Branches** → Add rule for `main`.
-2. Enable **Require status checks to pass before merging** and select **backend-tests** and **frontend-build** (or the “CI” workflow).
-3. Save. Then merges to `main` only succeed when CI is green; Render will only receive pushes that passed CI (if you merge via PR).
+1. GitHub repo → **Settings** → **Branches** → **Add rule** (or **Edit** the existing rule for `main`). Set **Branch name pattern** to `main`. Enable **Require status checks to pass before merging**. In "Status checks that are required", search and add **backend-tests** and **frontend-build**; optionally add **interface-checks** if you use the RUN_INTERFACE_CHECKS variable (it only appears after that job has run at least once). Click **Create** or **Save**. Merges to `main` are then blocked until these checks pass.
+2. In **Status checks that are required**, add **backend-tests** and **frontend-build** (and **interface-checks** if you use it).
+3. Save. Merge to main is then allowed only when these checks are green.
 
 ---
 
