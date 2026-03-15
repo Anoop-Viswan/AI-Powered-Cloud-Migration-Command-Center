@@ -22,7 +22,14 @@ Optional: run the interface job only when secrets are present (e.g. `if: ${{ sec
 
 **Summary:** For a cloud-first, “main = deploy-ready” stance, **run interface verification in CI with secrets** (recommended). If you prefer not to store any keys in GitHub, use **deploy-time verification** so Render fails fast when keys are wrong.
 
-**What we ship:** The workflow includes an optional job `interface-checks` that runs **only when** the secret `PINECONE_API_KEY` is set. Once you add that (and optionally `OPENAI_API_KEY`, `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`) in GitHub → Settings → Secrets, the job runs on every PR/push and fails with the same detailed messages as `verify_setup.py` if a required interface is missing or invalid. You can then add **interface-checks** as a required status for `main` in branch protection so main stays deploy-ready.
+**What we ship:** The workflow includes an optional job `interface-checks` that runs **all** interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink)—not just Pinecone. It runs `verify_setup.py`, so when the job runs, every interface is verified.
+
+**When does the job run?** Either use a flag or any key:
+
+- **Option A (flag):** Set a secret **`RUN_INTERFACE_CHECKS`** = `true` (or `1`). Then add the API key secrets you use (e.g. `PINECONE_API_KEY`, `OPENAI_API_KEY`, `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`, and Azure vars if you use Azure OpenAI). The job runs on every PR/push and checks every interface; required (Pinecone, LLM) must pass.
+- **Option B (key as trigger):** Add **`PINECONE_API_KEY`** (and the other keys you need). The job runs whenever that secret exists and again checks **all** interfaces. So the key only controls “run the job”; the script checks everything.
+
+**Secrets to add** (GitHub → Settings → Secrets and variables → Actions): At minimum, the ones your app uses: `PINECONE_API_KEY`, `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` / Azure vars). Optionally: `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`. The job passes them into `verify_setup.py`; if a required interface is missing or invalid, the job fails with the same detailed messages as when you run the script locally. Add **interface-checks** as a required status for `main` in branch protection so main stays deploy-ready.
 
 ---
 

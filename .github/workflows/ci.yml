@@ -54,12 +54,17 @@ jobs:
           npm ci
           npm run build
 
-  # Optional: run interface checks (Pinecone, LLM, etc.) when secrets are set.
-  # Add GitHub Secrets (e.g. PINECONE_API_KEY, OPENAI_API_KEY) then enable this job
-  # in branch protection so main only merges when interfaces are verified (cloud-ready).
+  # Optional: run ALL interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) in CI.
+  # When this job runs, it runs verify_setup.py which checks every interface, not just Pinecone.
+  #
+  # When does this job run? Either:
+  #   A) Set secret RUN_INTERFACE_CHECKS = "true" (or "1") to explicitly enable "run all interface checks."
+  #   B) Or set PINECONE_API_KEY (and other keys as needed); job runs and checks all interfaces.
+  # Add the API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) so the script can verify each one.
+  # Require this job in branch protection so main only merges when all required interfaces pass.
   interface-checks:
     runs-on: ubuntu-latest
-    if: ${{ secrets.PINECONE_API_KEY != '' }}
+    if: ${{ secrets.RUN_INTERFACE_CHECKS == 'true' || secrets.RUN_INTERFACE_CHECKS == '1' || secrets.PINECONE_API_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -73,11 +78,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run interface connectivity checks
+      - name: Run all interface connectivity checks
         env:
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
           LANGCHAIN_TRACING_V2: "false"
+          # Azure OpenAI (if you use LLM_PROVIDER=azure_openai)
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
         run: python scripts/verify_setup.py
