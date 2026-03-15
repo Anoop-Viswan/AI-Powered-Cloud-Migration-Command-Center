@@ -1,221 +1,121 @@
-# Pinecone Semantic Search (Python)
+# Cloud Migration Command Center
 
-Semantic search **restricted to a single project directory**. Only files under that directory are indexed; search returns only those documents. Other folders on your machine are never included.
+AI-powered migration command center: **Knowledge Base** (semantic search over migration docs), **Assessment** (profile → research → report), and **Admin & Diagnostics** (run research, view reports, monitor LLM/tool usage). The KB uses Pinecone for vector search; other modules use LLM, optional Tavily for official-doc search, and optional LangSmith for tracing.
 
-## Prerequisites
+**First time here (new environment / open-source user)?**  
+Follow **[docs/Setup-and-Reference/One-Time-Setup.md](docs/Setup-and-Reference/One-Time-Setup.md)** for step-by-step setup (Pinecone, LLM, optional Tavily/LangSmith). Then run **`python scripts/verify_setup.py`** to confirm everything is correct; it will tell you what passed, what failed, and **what to do** for each failure.
 
-- **Pinecone API key** – [Create one at app.pinecone.io](https://app.pinecone.io/)
-- **Python 3.8+**
-- **Pinecone CLI** – required **once** to create the index (see below). Without this step, search/seed will return **404 Resource not found**.
+---
 
-## 1. First-time setup: create the Pinecone index (required once)
-
-The app uses an index named **`coe-kb-search`**. If you see a 404 like `Resource coe-kb-search not found`, the index does not exist yet. Create it once (see below).
-
-**Why an index is needed:** In Pinecone, an **index** is the place where your vectors (embeddings) are stored. This app sends document text to Pinecone; Pinecone uses a **hosted embedding model** on the index to turn that text into vectors and store them. When you search or use the chat, the app sends your query text; Pinecone embeds the query with the same model and runs similarity search over those vectors. So you need one index per “knowledge base” (or one index with namespaces—this app uses one index and one namespace per project directory). The index must be created with the right **embedding model** and **field mapping** (`text` → `content`) so that the API knows which field to embed.
-
-**Option A – Create the index in the Pinecone console (recommended)**
-
-1. Go to [app.pinecone.io](https://app.pinecone.io/) and sign in.
-2. Open your project (or create one), then click **Create index**.
-3. Set:
-   - **Name:** `coe-kb-search` (must match exactly).
-   - **Embedding model:** Choose **Inference** (integrated embedding) and select **llama-text-embed-v2** (or the model you want; the app assumes this model).
-   - **Similarity:** **Cosine**.
-   - **Cloud & region:** e.g. **AWS** / **us-east-1** (or your preferred region).
-   - **Field mapping:** See **Field map** below — you must set the **record field** used for embedding to **`content`**.
-4. Create the index and wait until its status is **Ready** (usually 1–2 minutes).
-
-**Field map (what to set in the console)**  
-The app sends each record with **both** **`text`** and **`content`** (same chunk value) so indexes that expect a **`text`** field for embedding (e.g. mapping `text=content`) work. Query is sent as **`inputs: { "text": "<query>" }`**.
-
-- **When we index (e.g. the SuperNova docx):** Each record has a field **`content`** — that’s the text chunk we want Pinecone to embed. So the “field to embed” / “source field” / “record field for embedding” in the console must be **`content`**.
-- **When we search/chat:** The app sends the query under **`inputs: { "text": "<query>" }`**. So the query side uses the name **`text`** (that’s the model’s input parameter; the console may show this as default).
-- **What to set:** If the UI shows **“text”** as default, that’s the *model input* name. You need to tell Pinecone: “when embedding a record, use the value from the record field **content**.” So set the **record field** (or “source field” / “field to embed”) to **`content`**. The mapping is: model input **text** ← record field **content**. In the CLI this is `--field_map text=content`.
-
-**Option B – Create the index with the Pinecone CLI**
+## Quick start
 
 ```bash
-# Install CLI (macOS)
-brew tap pinecone-io/tap && brew install pinecone-io/tap/pinecone
-pc version
-
-# Create index (use same API key as in .env)
-cd /path/to/pinecone-semantic-search
-export PINECONE_API_KEY=your-api-key   # or: source .env
-pc index create -n coe-kb-search -m cosine -c aws -r us-east-1 --model llama-text-embed-v2 --field_map text=content
-
-# Verify when ready
-pc index list
-pc index describe --name coe-kb-search
-```
-
-After the index is **Ready**, run the app again (seed from UI or CLI, then search).
-
-## 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env and set:
-#   PINECONE_API_KEY=your-api-key          # from https://app.pinecone.io/
-#   PINECONE_PROJECT_DIR=/path/to/project  # optional; you can pass --project-dir instead
-#   PINECONE_SPEND_LIMIT=10                # optional; default 10 (dollars). Script blocks when estimated usage reaches this.
-```
-
-**Adding your API key:** Paste your key only into the `.env` file on your machine. Do not share it in chat or commit `.env` to version control.
-
-## 3. Install dependencies
-
-```bash
+git clone <this-repo>
+cd <repo-dir>
 python3 -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env
+# Edit .env: PINECONE_API_KEY, PINECONE_PROJECT_DIR (optional), OPENAI_API_KEY (or other LLM), etc.
+python scripts/verify_setup.py
 ```
 
-## 4. Index your project directory (one-time)
-
-Only the directory you pass is scanned and sent to Pinecone. Everything else is ignored.
-
-```bash
-# Use --project-dir (required)
-python semantic_search.py --project-dir /path/to/your/project --seed
-```
-
-Or set the path in `.env` and run:
-
-```bash
-python semantic_search.py --seed
-```
-
-**Included:** Text/code (`.md`, `.txt`, `.py`, `.js`, `.ts`, `.tsx`, `.jsx`, `.json`, `.yml`, `.yaml`, `.toml`, `.rst`, `.sh`, etc.) and documents: **`.pdf`**, **`.doc`**, **`.docx`**, **`.xls`**, **`.xlsx`**, **`.csv`**, **`.pptx`** (see `INCLUDE_EXTENSIONS` in `semantic_search.py`).
-
-**Excluded:** `.git`, `node_modules`, `venv`, `.venv`, `__pycache__`, `dist`, `build`, `.next`, and other hidden or build dirs.
-
-Large files are split into chunks so they stay within Pinecone limits. Each chunk has metadata: `file_path`, `category` (extension), `application` (first folder under project dir), `content_type` (prose/table/slide), and any fields from a **manifest** (see below).
-
-**Application folders and manifest:** You can organize files under **application folders** (e.g. `MyApp/reports/doc.pdf`). The indexer derives **application name** from the first path segment. Optionally add a **`manifest.json`** in the project directory to attach extra metadata (e.g. `technology`, `tools`, `description`) per application. See `docs/MANIFEST.md` and copy `manifest.json.example` into your project directory as `manifest.json`.
-
-## 5. Search (only in that project)
-
-Searches run only over the namespace for that project directory. No other documents are searched.
-
-```bash
-python semantic_search.py --project-dir /path/to/your/project --query "where is the main entry point?"
-```
-
-Filter by file type (extension) or by application (folder name):
-
-```bash
-python semantic_search.py --project-dir /path/to/your/project --query "API routes" --category py --top-k 5
-python semantic_search.py --project-dir /path/to/your/project --query "deployment" --application FinanceApp
-```
-
-If `PINECONE_PROJECT_DIR` is set in `.env`, you can omit `--project-dir`:
-
-```bash
-python semantic_search.py --query "configuration options"
-```
-
-## Spend guardrail ($10 default)
-
-The script tracks **estimated** Pinecone usage (read units from search responses, write units from upserts) and persists it in `.pinecone_usage.json`. When the estimated spend reaches **PINECONE_SPEND_LIMIT** (default **$10**), the script **blocks** further runs and prints:
-
-- Current estimated usage and your limit  
-- Instructions to give **explicit permission** to go over the limit
-
-To allow usage beyond the limit, either:
-
-1. Set in `.env`: `PINECONE_ALLOW_OVER_LIMIT=yes`
-2. Or run with: `--allow-over-limit`
-
-Check current estimated usage anytime:
-
-```bash
-python semantic_search.py --check-usage
-```
-
-Note: Estimation uses this app’s operations only and Pinecone’s approximate serverless pricing. Actual billing may differ; use the [Pinecone console](https://app.pinecone.io/) for official usage.
-
-## Summary
-
-| What | How |
-|------|-----|
-| Restrict to one directory | Use `--project-dir /path/to/project` (or `PINECONE_PROJECT_DIR`). Only that path is indexed and searched. |
-| Index that directory | `python semantic_search.py --project-dir <dir> --seed` |
-| Search that directory | `python semantic_search.py --project-dir <dir> --query "..."` |
-| Multiple projects | Use a different `--project-dir` for each; each gets its own namespace so they don’t mix. |
-| Check estimated spend | `python semantic_search.py --check-usage` |
-| Allow usage over limit | Set `PINECONE_ALLOW_OVER_LIMIT=yes` in `.env` or use `--allow-over-limit` |
-
-## Web app (Phase 2)
-
-A React frontend and FastAPI backend provide:
-
-- **Home** – Landing page with Center of Excellence (CoE) info and migration journey tabs.
-- **Assessment** – Multi-agent assessment: collect application profile, run research (KB search + LLM synthesis), generate assessment report. Uses LangGraph for orchestration; LangSmith for observability when configured.
-- **Ask the KB** – Chat interface: questions are run against the knowledge base and summarized by an LLM (set `OPENAI_API_KEY` in `.env` for summaries).
-- **Admin** – View config (project dir, spend limit), usage, run re-index (seed), and view manifest applications.
-
-**Run backend and frontend (from project root):**
+Create the Pinecone index `coe-kb-search` once (see [One-Time-Setup](docs/Setup-and-Reference/One-Time-Setup.md)). Then:
 
 ```bash
 # Terminal 1 – API
-source venv/bin/activate
 uvicorn backend.main:app --reload --port 8000
 
 # Terminal 2 – Frontend
 cd frontend && npm install && npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The frontend proxies `/api` to the backend. Optional: set `OPENAI_API_KEY` (and optionally `OPENAI_MODEL`, default `gpt-4o-mini`) in `.env` for chat summarization.
+Open [http://localhost:5173](http://localhost:5173). Seed the KB from Admin → Knowledge Base, or:  
+`python -m backend.semantic_search --project-dir /path/to/docs --seed`
 
-## Deployment (Hugging Face or cloud)
+---
 
-You **do need to containerize** for both Hugging Face Spaces and cloud (AWS, GCP, Azure). The repo includes a **Dockerfile** that builds the frontend and runs the backend in one image.
+## Documentation (where to look)
 
-- **Hugging Face:** Create a **Docker Space**, push this repo (with Dockerfile), set secrets (`PINECONE_API_KEY`, optional `OPENAI_API_KEY`). The app listens on port 7860. See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for step-by-step and project-directory options.
-- **Cloud:** Build the same image and deploy to ECS, Cloud Run, Container Apps, etc. Same doc has a short cloud section.
+| Area | Location | Description |
+|------|----------|-------------|
+| **Architecture & design** | [docs/Architecture-and-Design/](docs/Architecture-and-Design/) | System architecture, research flow, wireframes, diagnostics design. |
+| **Setup & reference** | [docs/Setup-and-Reference/](docs/Setup-and-Reference/) | One-time setup, env variables, config, interface tests. |
+| **Deployment** | [docs/Deployment/](docs/Deployment/) | Cloud deploy, Render step-by-step, CI/CD. |
+| **Guides** | [docs/Guides/](docs/Guides/) | SQLite, Pinecone, Pydantic, tool extension, manifest, code review. |
+| **Development iterations** | [docs/Development-Iterations/](docs/Development-Iterations/) | How the project was built (AI-assisted narrative, phase plans). |
 
-Quick local test of the container:
+---
+
+## Modules
+
+- **Knowledge Base (KB)** – Semantic search over a single project directory; indexing and search via Pinecone (`backend.semantic_search`). Optional `manifest.json` for metadata.
+- **Assessment** – Application profile → validation → submit (app user); research → report → quality check (admin). Uses KB, LLM, optional Tavily for official-doc search.
+- **Admin & Diagnostics** – Admin command center: assessments list, KB config, Diagnostics tab (LLM/Tavily/Pinecone usage, thresholds, request log).
+- **Planning** *(placeholder)* – Future runbooks, checklists.
+- **Execution** *(placeholder)* – Future post-migration artifacts.
+
+---
+
+## Prerequisites
+
+- **Pinecone API key** – [app.pinecone.io](https://app.pinecone.io/); create index `coe-kb-search` once (see [One-Time-Setup](docs/Setup-and-Reference/One-Time-Setup.md)).
+- **Python 3.8+**
+- **LLM** – OpenAI (default), Anthropic, or Azure OpenAI; set the corresponding API key in `.env` (see [ENV-Reference](docs/Setup-and-Reference/ENV-Reference.md)).
+
+---
+
+## KB CLI (seed & search)
+
+From project root:
 
 ```bash
-docker build -t migration-command-center .
-docker run -p 7860:7860 -e PINECONE_API_KEY=your-key -v /path/to/docs:/data migration-command-center
+python -m backend.semantic_search --project-dir /path/to/docs --seed
+python -m backend.semantic_search --project-dir /path/to/docs --query "your question"
+python -m backend.semantic_search --check-usage
 ```
 
-Then open [http://localhost:7860](http://localhost:7860).
+If `PINECONE_PROJECT_DIR` is set in `.env`, you can omit `--project-dir`. See [Guides/Pinecone-Guide.md](docs/Guides/Pinecone-Guide.md).
 
-## Running tests
+---
 
-Unit and integration tests cover document extractors, semantic search, and the assessment module. From the project root with the venv activated:
+## Optional features
+
+| Feature | Purpose | Env |
+|--------|---------|-----|
+| **Tavily** | Official-doc web search when KB confidence is low | `TAVILY_API_KEY` |
+| **LangSmith** | Tracing for LangChain/LangGraph | `LANGCHAIN_TRACING_V2=true`, `LANGCHAIN_API_KEY` |
+
+Admin → Knowledge Base shows **Feature status** for each; missing keys show clear instructions. Full list: [ENV-Reference](docs/Setup-and-Reference/ENV-Reference.md).
+
+---
+
+## Deployment
+
+- **Render (Docker):** [docs/Deployment/Deploy-Render.md](docs/Deployment/Deploy-Render.md)
+- **Other cloud:** [docs/Deployment/Deployment.md](docs/Deployment/Deployment.md)
 
 ```bash
-pip install -r requirements.txt
-python -m pytest tests/ -v
+docker build -t cloud-migration-command-center .
+docker run -p 7860:7860 -e PINECONE_API_KEY=your-key -v /path/to/docs:/data cloud-migration-command-center
 ```
 
-Assessment tests:
-- `tests/test_assessment_models.py` – ApplicationProfile, AssessmentState
-- `tests/test_assessment_store.py` – SQLite persistence
-- `tests/test_assessment_agents.py` – Research Agent, Summarizer (mocked LLM)
-- `tests/test_assessment_api.py` – API integration (start, profile, research, summarize)
+---
+
+## Tests
+
+```bash
+pytest tests/ -m "not external" -v
+```
+
+Interface connectivity tests (Pinecone, LLM, Tavily, etc.) are marked `external`; run `python scripts/verify_setup.py` for full checks. See [Setup-and-Reference/Interface-Tests.md](docs/Setup-and-Reference/Interface-Tests.md).
+
+---
 
 ## Project layout
 
-- `semantic_search.py` – Scans one project dir, upserts chunks to a project-scoped namespace; supports PDF, DOCX, XLS, XLSX, CSV, PPTX and text files; application name from folder structure; optional `manifest.json` for extra metadata; search with reranking and optional `--category` / `--application`. Enforces spend guardrail unless overridden.
-- `document_extractors.py` – Text extraction and chunking for PDF, DOCX, XLS, XLSX, CSV, PPTX.
-- `docs/MANIFEST.md` – How to use application folders and `manifest.json`.
-- `manifest.json.example` – Example manifest; copy to your project directory as `manifest.json`.
-- `usage_tracker.py` – Tracks read/write units and estimated cost; blocks when at or above `PINECONE_SPEND_LIMIT` unless permission given.
-- `requirements.txt` – `pinecone`, `python-dotenv`, document libs, `pytest`.
-- `tests/` – Unit tests: `test_document_extractors.py`, `test_semantic_search.py`; fixtures in `conftest.py`.
-- `.env` – `PINECONE_API_KEY`, optional `PINECONE_PROJECT_DIR`, `PINECONE_SPEND_LIMIT` (default 10), `PINECONE_ALLOW_OVER_LIMIT` (yes to allow over limit).
-- `.pinecone_usage.json` – Persisted usage (created automatically; in `.gitignore`).
-
-## Troubleshooting
-
-- **Project directory required** – You must pass `--project-dir` or set `PINECONE_PROJECT_DIR`.
-- **No text files found** – Check that the path is correct and that it contains files with extensions listed in `INCLUDE_EXTENSIONS` (e.g. `.md`, `.py`).
-- **Index not found** – Create the index with the CLI (step 1) and wait until it’s ready.
-- **No results after --seed** – The script waits 10s after upsert; if you run search from another terminal, wait at least 10 seconds after the seed run finishes.
-- **Script exits with “PINECONE SPEND GUARDRAIL”** – Estimated usage is at or above `PINECONE_SPEND_LIMIT`. To proceed, set `PINECONE_ALLOW_OVER_LIMIT=yes` in `.env` or run with `--allow-over-limit`. To reset tracked usage, delete `.pinecone_usage.json` (estimation will start from zero again).
+- **backend/** – API, KB (`semantic_search`, `document_extractors`, `usage_tracker`), assessment, diagnostics, tool gateway.
+- **frontend/** – React app (Assessment, Admin, Chat, Home).
+- **docs/** – Architecture, setup, deployment, guides, development iterations (see [Documentation](#documentation-where-to-look) above).
+- **scripts/** – `verify_setup.py`, `verify_interfaces.py`.
+- **tests/** – Pytest suite.

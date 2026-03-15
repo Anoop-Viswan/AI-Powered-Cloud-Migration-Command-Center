@@ -1,14 +1,19 @@
-# Docs & GitHub Pages
+# Documentation index
 
-This folder contains the project’s **GitHub Pages** site.
+This folder contains all project documentation, organized by topic.
 
-- **`index.html`** – Landing page: overview, modules (KB, Assessment, Planning, etc.), design (Vector DB + LLM diagram, Assessment multi-agent), and 4-weekend timeline/roadmap.
+| Section | Description |
+|---------|-------------|
+| **[Architecture-and-Design/](Architecture-and-Design/)** | System architecture, research flow, wireframes, module designs (Assessment, Diagnostics, Admin). |
+| **[Setup-and-Reference/](Setup-and-Reference/)** | One-time setup, env variables, config, interface connectivity tests. |
+| **[Deployment/](Deployment/)** | Deployment options, Render step-by-step, CI/CD pipeline. |
+| **[Guides/](Guides/)** | SQLite, Pinecone, Pydantic, tool extension, manifest, code review. |
+| **[Development-Iterations/](Development-Iterations/)** | How the project was iterated and built (AI-assisted narrative, original blueprints). |
 
-## Enabling GitHub Pages
+**Entry points**
 
-1. In your GitHub repo: **Settings → Pages**.
-2. Under **Source**, choose **Deploy from a branch**.
-3. Branch: **main** (or **master**), folder: **/docs**, then **Save**.
-4. The site will be available at `https://<username>.github.io/<repo-name>/` (or your custom domain).
+- **New user / setup:** [Setup-and-Reference/One-Time-Setup.md](Setup-and-Reference/One-Time-Setup.md) → then run `python scripts/verify_setup.py`.
+- **Architecture and flows:** [Architecture-and-Design/](Architecture-and-Design/) (start with [Architecture.md](Architecture-and-Design/Architecture.md) and [Research-Flow.md](Architecture-and-Design/Research-Flow.md)).
+- **Deploy to cloud:** [Deployment/Deploy-Render.md](Deployment/Deploy-Render.md) or [Deployment/Deployment.md](Deployment/Deployment.md).
 
-Replace the “Repository” link in `index.html` with your actual repo URL when you publish.
+**GitHub Pages:** The file [index.html](index.html) in this folder is the landing page. In repo Settings → Pages, set source to this branch and folder `/docs`.

@@ -15,7 +15,7 @@ class SearchRequest(BaseModel):
 
 # Lazy import after path is set
 def _get_search_deps():
-    from semantic_search import (
+    from backend.semantic_search import (
         get_client,
         namespace_for_project,
         search_knowledge_base,

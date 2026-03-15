@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from semantic_search import (
+from backend.semantic_search import (
     application_from_path,
     build_records_from_project,
     load_manifest,

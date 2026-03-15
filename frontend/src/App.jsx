@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Chat from './pages/Chat'
 import Admin from './pages/Admin'
+import AdminAssessmentDetail from './pages/AdminAssessmentDetail'
 import Assessment from './pages/Assessment'
 
 function NavLink({ to, children }) {
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/assessment/:id" element={<AdminAssessmentDetail />} />
         </Routes>
       </main>
     </div>

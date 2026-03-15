@@ -6,8 +6,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 
-from backend.config import get_project_dir
+from backend.config import get_project_dir, reload_env
 from backend.services.assessment.store import AssessmentStore
+from backend.services.feature_status import get_feature_status
 
 
 def get_assessment_store() -> AssessmentStore:
@@ -29,12 +30,12 @@ def _write_seed_status(data: dict):
 
 def _run_seed():
     """Run seed in process (blocking). Called from background task. Writes status to .seed_status.json."""
-    from semantic_search import (
+    from backend.semantic_search import (
         get_client,
         seed_documents,
         INDEX_NAME,
     )
-    from usage_tracker import check_spend_guardrail
+    from backend.usage_tracker import check_spend_guardrail
     project_dir = get_project_dir()
     if not project_dir:
         _write_seed_status({
@@ -77,7 +78,7 @@ def get_config():
 
 @router.get("/usage")
 def get_usage():
-    from usage_tracker import get_estimated_spend, get_spend_limit
+    from backend.usage_tracker import get_estimated_spend, get_spend_limit
     estimated, ru, wu = get_estimated_spend()
     limit = get_spend_limit()
     return {
@@ -118,7 +119,7 @@ def trigger_seed(background_tasks: BackgroundTasks):
 
 @router.get("/manifest")
 def get_manifest():
-    from semantic_search import load_manifest
+    from backend.semantic_search import load_manifest
     project_dir = get_project_dir()
     if not project_dir:
         return {"applications": {}}
@@ -142,3 +143,40 @@ def list_assessments(
 ):
     """List assessments for admin: id, app_name, status, error_message, updated_at."""
     return store.list_all(limit=limit, status_filter=status)
+
+
+@router.get("/feature-status")
+def get_feature_status_endpoint():
+    """
+    Return status for all features (Pinecone, LLM, LangSmith, Tavily) so the UI
+    can show informed messages: what is configured, what is missing, and how to fix.
+    Uses env loaded at startup or after POST /api/admin/reload-env.
+    """
+    return get_feature_status()
+
+
+@router.post("/reload-env")
+def reload_env_endpoint():
+    """
+    Re-read .env from project root and update process env (one-time refresh).
+    Call this after editing .env to pick up new keys (e.g. TAVILY_API_KEY) without restarting the server.
+    Then refresh feature-status or run research to use the updated config.
+    """
+    reload_env()
+    return {"ok": True, "message": "Environment reloaded from .env. Refresh feature status or run research to use updated keys."}
+
+
+@router.post("/assessments/cleanup")
+def cleanup_assessments(
+    store: AssessmentStore = Depends(get_assessment_store),
+    status: str = Query(..., description="Delete all with this status, e.g. draft"),
+    limit: int = Query(1000, ge=1, le=5000),
+):
+    """Delete all assessments with the given status. Use for cleaning up drafts."""
+    if status not in ("draft", "error"):
+        raise HTTPException(
+            status_code=400,
+            detail="Cleanup only allowed for status: draft or error",
+        )
+    deleted = store.delete_by_status(status, limit=limit)
+    return {"ok": True, "deleted": deleted}

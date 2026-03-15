@@ -189,6 +189,7 @@ def _llm_completeness_check(profile: ApplicationProfile) -> tuple[bool, list[str
     try:
         from langchain_core.messages import HumanMessage, SystemMessage
 
+        from backend.services.diagnostics.recorder import invoke_llm
         from backend.services.llm_provider import get_llm
 
         llm = get_llm(temperature=0, max_tokens=300)
@@ -206,10 +207,10 @@ Reply in exactly this format:
 STATUS: READY or NOT_READY
 SUGGESTIONS: (if NOT_READY, list 1-3 critical missing fields in one line, else "None")"""
 
-        resp = llm.invoke([
+        resp = invoke_llm(llm, [
             SystemMessage(content=system),
             HumanMessage(content=f"Profile:\n{context}"),
-        ])
+        ], "profile_validation", assessment_id=None)
         text = (resp.content or "").strip().upper()
         ready = "STATUS: NOT_READY" not in text and ("STATUS: READY" in text or "READY" in text)
         suggestions = []

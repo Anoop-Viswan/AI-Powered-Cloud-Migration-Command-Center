@@ -5,7 +5,7 @@
 FROM node:20-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -20,9 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App code
+# App code (semantic_search, document_extractors, usage_tracker live under backend/)
 COPY backend/ ./backend/
-COPY semantic_search.py document_extractors.py usage_tracker.py ./
 COPY manifest.json.example ./
 
 # Built frontend → static (so FastAPI can serve it)
@@ -34,4 +33,5 @@ ENV PINECONE_PROJECT_DIR=/data
 EXPOSE 7860
 
 # Hugging Face Spaces expect server on 7860; use 0.0.0.0 so it’s reachable
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Use PORT env if set (e.g. Render sets PORT=10000); default 7860 for Hugging Face / local
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-7860}"]

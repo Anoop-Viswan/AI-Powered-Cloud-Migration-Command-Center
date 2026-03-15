@@ -20,7 +20,7 @@ class ChatRequest(BaseModel):
 
 
 def _search_kb(query: str, category: str | None = None, application: str | None = None, top_k: int = 5):
-    from semantic_search import (
+    from backend.semantic_search import (
         get_client,
         namespace_for_project,
         search_knowledge_base,

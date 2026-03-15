@@ -173,7 +173,7 @@ class ApplicationProfile(BaseModel):
 
 
 class AssessmentState(BaseModel):
-    """Full assessment state (profile + approach + report)."""
+    """Full assessment state (profile + approach + report + optional quality check)."""
 
     id: str
     profile: ApplicationProfile | None = None
@@ -183,3 +183,5 @@ class AssessmentState(BaseModel):
         "draft"
     )
     error_message: str | None = None
+    quality_check: dict | None = None  # Scores, reasons, suggestions (see quality_check.py)
+    research_details: dict | None = None  # kb_hits + official_docs for transparency (what was retrieved)

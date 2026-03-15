@@ -16,6 +16,8 @@ __pycache__
 .pytest_cache
 .coverage
 htmlcov
+*.db
+data
 
 # Docs and samples (keep manifest example)
 docs

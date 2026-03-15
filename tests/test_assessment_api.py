@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
+from backend.routers.admin import get_assessment_store
 from backend.routers.assessment import get_store
 from backend.services.assessment.store import AssessmentStore
 
@@ -42,10 +43,12 @@ def client(tmp_path):
     db_path = tmp_path / "api_test.db"
     store = AssessmentStore(db_path=db_path)
     app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_assessment_store] = lambda: store
     try:
         yield TestClient(app)
     finally:
         app.dependency_overrides.pop(get_store, None)
+        app.dependency_overrides.pop(get_assessment_store, None)
 
 
 @pytest.fixture
@@ -54,6 +57,21 @@ def assessment_id(client):
     r = client.post("/api/assessment/start")
     assert r.status_code == 200
     return r.json()["assessment_id"]
+
+
+@pytest.fixture
+def client_and_store(tmp_path):
+    """Test client and store, for tests that need to manipulate the store directly."""
+    db_path = tmp_path / "api_test.db"
+    store = AssessmentStore(db_path=db_path)
+    app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_assessment_store] = lambda: store
+    try:
+        client = TestClient(app)
+        yield client, store
+    finally:
+        app.dependency_overrides.pop(get_store, None)
+        app.dependency_overrides.pop(get_assessment_store, None)
 
 
 def test_start_assessment(client):
@@ -192,15 +210,24 @@ def test_submit_success(client, assessment_id):
 
 @patch("backend.routers.assessment.run_research")
 def test_research_success(mock_research, client, assessment_id):
-    """POST /assessment/{id}/research returns approach document."""
-    client.put(f"/api/assessment/{assessment_id}/profile", json=VALID_PROFILE)
+    """POST /assessment/{id}/research returns approach document and structured KB data."""
+    from backend.services.assessment.research_models import KBConfidence, ResearchResult
 
-    mock_research.return_value = "## Approach\n- Step 1\n- Step 2"
+    client.put(f"/api/assessment/{assessment_id}/profile", json=VALID_PROFILE)
+    mock_research.return_value = ResearchResult(
+        approach_document="## Approach\n- Step 1\n- Step 2",
+        kb_confidence=KBConfidence(value=0.7, label="high", below_threshold=False),
+        kb_hits=[],
+        official_docs=[],
+    )
     r = client.post(f"/api/assessment/{assessment_id}/research")
     assert r.status_code == 200
     data = r.json()
     assert "## Approach" in data["approach_document"]
     assert data["status"] == "research_done"
+    assert "kb_confidence" in data
+    assert data["kb_confidence"]["label"] == "high"
+    assert "kb_hits" in data
 
 
 def test_summarize_requires_profile(client, assessment_id):
@@ -216,17 +243,211 @@ def test_summarize_requires_research(client, assessment_id):
     assert r.status_code == 400
 
 
-@patch("backend.routers.assessment.run_research")
+@patch("backend.routers.assessment.export_target_diagram")
+@patch("backend.routers.assessment.run_mermaid_from_design")
+@patch("backend.routers.assessment.run_architecture_design")
+@patch("backend.routers.assessment.run_quality_check")
 @patch("backend.routers.assessment.run_summarize")
-def test_summarize_success(mock_summarize, mock_research, client, assessment_id):
-    """POST /assessment/{id}/summarize returns report."""
-    client.put(f"/api/assessment/{assessment_id}/profile", json=VALID_PROFILE)
-    mock_research.return_value = "## Approach doc"
-    client.post(f"/api/assessment/{assessment_id}/research")
+def test_summarize_success(
+    mock_summarize,
+    mock_quality_check,
+    mock_design,
+    mock_mermaid,
+    mock_export,
+    client_and_store,
+):
+    """POST /assessment/{id}/summarize runs design -> mermaid -> export -> report -> quality check."""
+    from backend.services.assessment.architecture_design_agent import DesignResult
 
+    client, store = client_and_store
+    r_start = client.post("/api/assessment/start")
+    assert r_start.status_code == 200
+    assessment_id = r_start.json()["assessment_id"]
+    client.put(f"/api/assessment/{assessment_id}/profile", json=VALID_PROFILE)
+    store.update_approach(assessment_id, "## Approach doc")
+
+    mock_design.return_value = DesignResult(
+        design_instructions="Azure App Service, Azure SQL, Front Door.",
+        clarifications_needed=[],
+    )
+    mock_mermaid.return_value = "flowchart TB\n  A[App]\n  B[DB]\n  A --> B"
+    mock_export.return_value = {"image_url": f"/api/assessment/{assessment_id}/diagram/target?format=png"}
     mock_summarize.return_value = "# Assessment Report\n\n## Executive Summary\n..."
+    mock_quality_check.return_value = {
+        "comprehensive": {"score": 75, "reason": "Covers main sections."},
+        "actionable": {"score": 70, "reason": "Clear next steps."},
+        "useful": {"score": 80, "reason": "App-specific."},
+        "diagrams": {"score": 80, "reason": "Target-state Mermaid diagram present."},
+        "overall_pass": True,
+        "suggestions": [],
+    }
     r = client.post(f"/api/assessment/{assessment_id}/summarize")
     assert r.status_code == 200
     data = r.json()
     assert "Assessment Report" in data["report"] or "Executive Summary" in data["report"]
     assert data["status"] == "done"
+
+
+@patch("backend.routers.assessment.run_architecture_design")
+def test_summarize_needs_clarification(mock_design, client_and_store):
+    """POST /assessment/{id}/summarize returns needs_clarification when design asks questions."""
+    from backend.services.assessment.architecture_design_agent import DesignResult
+
+    client, store = client_and_store
+    r_start = client.post("/api/assessment/start")
+    assessment_id = r_start.json()["assessment_id"]
+    client.put(f"/api/assessment/{assessment_id}/profile", json=VALID_PROFILE)
+    store.update_approach(assessment_id, "## Approach doc")
+
+    mock_design.return_value = DesignResult(
+        design_instructions="Target: Azure. App Service, SQL.",
+        clarifications_needed=["Who consumes the audit data?", "What is the expected RPO?"],
+    )
+    r = client.post(f"/api/assessment/{assessment_id}/summarize")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["status"] == "needs_clarification"
+    assert "questions" in data
+    assert len(data["questions"]) == 2
+
+
+def test_get_report_json(client, assessment_id):
+    """GET /assessment/{id}/report returns JSON with report text (default)."""
+    r = client.get(f"/api/assessment/{assessment_id}/report")
+    assert r.status_code == 200
+    data = r.json()
+    assert "report" in data
+    assert data["report"] == "" or isinstance(data["report"], str)
+
+    client.put(
+        f"/api/assessment/{assessment_id}/report",
+        json={"report": "# My Report\n\nContent here."},
+    )
+    r2 = client.get(f"/api/assessment/{assessment_id}/report")
+    assert r2.status_code == 200
+    assert "My Report" in r2.json()["report"]
+
+
+def test_get_report_docx(client, assessment_id):
+    """GET /assessment/{id}/report?format=docx returns DOCX attachment."""
+    client.put(
+        f"/api/assessment/{assessment_id}/report",
+        json={"report": "# Title\n\nParagraph one."},
+    )
+    r = client.get(f"/api/assessment/{assessment_id}/report?format=docx")
+    assert r.status_code == 200
+    assert "application/vnd.openxmlformats" in r.headers.get("content-type", "")
+    assert "attachment" in r.headers.get("content-disposition", "").lower()
+    assert len(r.content) > 100
+
+
+def test_put_report(client, assessment_id):
+    """PUT /assessment/{id}/report updates report body without changing status."""
+    r = client.get(f"/api/assessment/{assessment_id}")
+    assert r.json()["status"] == "draft"
+    r = client.put(
+        f"/api/assessment/{assessment_id}/report",
+        json={"report": "# Edited Report\n\nNew content."},
+    )
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+    r2 = client.get(f"/api/assessment/{assessment_id}")
+    assert r2.json()["report"] == "# Edited Report\n\nNew content."
+    assert r2.json()["status"] == "draft"
+
+
+def test_delete_assessment(client, assessment_id):
+    """DELETE /assessment/{id} removes the assessment."""
+    r = client.delete(f"/api/assessment/{assessment_id}")
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+    r2 = client.get(f"/api/assessment/{assessment_id}")
+    assert r2.status_code == 404
+
+
+def test_delete_assessment_not_found(client):
+    """DELETE /assessment/{id} returns 404 for unknown id."""
+    r = client.delete("/api/assessment/nonexistent-id-12345")
+    assert r.status_code == 404
+
+
+def test_cleanup_drafts(client):
+    """POST /api/admin/assessments/cleanup?status=draft removes all drafts."""
+    client.post("/api/assessment/start")
+    client.post("/api/assessment/start")
+    r = client.get("/api/admin/assessments")
+    assert len(r.json()) == 2
+    r = client.post("/api/admin/assessments/cleanup?status=draft")
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+    assert r.json().get("deleted") == 2
+    r2 = client.get("/api/admin/assessments")
+    assert len(r2.json()) == 0
+
+
+def test_feature_status(client):
+    """GET /api/admin/feature-status returns status for pinecone, llm, langsmith, tavily with informed messages."""
+    r = client.get("/api/admin/feature-status")
+    assert r.status_code == 200
+    data = r.json()
+    for key in ("pinecone", "llm", "langsmith", "tavily"):
+        assert key in data
+        entry = data[key]
+        assert "status" in entry
+        assert "message" in entry
+        assert entry["status"] in ("ok", "disabled", "limit_reached", "error")
+
+
+def test_diagnostics_summary(client):
+    """GET /api/admin/diagnostics/summary returns period, llm, tavily, thresholds, alerts."""
+    r = client.get("/api/admin/diagnostics/summary?period=24h")
+    assert r.status_code == 200
+    data = r.json()
+    assert "period" in data
+    assert data["period"] == "24h"
+    assert "llm" in data
+    assert "total_calls" in data["llm"]
+    assert "approx_cost_usd" in data["llm"]
+    assert "tavily" in data
+    assert "thresholds" in data
+    assert "alerts" in data
+
+
+def test_diagnostics_requests(client):
+    """GET /api/admin/diagnostics/requests returns a list with id, error_message, model, metadata for drill-down."""
+    r = client.get("/api/admin/diagnostics/requests?limit=10")
+    assert r.status_code == 200
+    data = r.json()
+    assert "requests" in data
+    assert isinstance(data["requests"], list)
+    for req in data["requests"]:
+        assert "id" in req
+        assert "interface" in req
+        assert "timestamp" in req
+        assert "error_message" in req  # may be None
+        assert "metadata" in req  # may be None; for tools
+        if req["interface"] == "llm":
+            assert "model" in req
+
+
+def test_diagnostics_interfaces(client):
+    """GET /api/admin/diagnostics/interfaces returns llm, tavily, pinecone with latency and status."""
+    r = client.get("/api/admin/diagnostics/interfaces?period=24h")
+    assert r.status_code == 200
+    data = r.json()
+    assert "llm" in data
+    assert "calls" in data["llm"]
+    assert "errors" in data["llm"]
+    assert "status" in data["llm"]
+    assert "tavily" in data
+    assert "pinecone" in data
+
+
+def test_diagnostics_patterns(client):
+    """GET /api/admin/diagnostics/patterns returns top_consumers with cost and pct."""
+    r = client.get("/api/admin/diagnostics/patterns?period=7d")
+    assert r.status_code == 200
+    data = r.json()
+    assert "period" in data
+    assert "top_consumers" in data
+    assert isinstance(data["top_consumers"], list)

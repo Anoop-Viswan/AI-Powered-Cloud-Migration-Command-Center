@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Matrix – Framework & Tool Selection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #4a5568;
+      --accent: #0d9488;
+      --accent-soft: rgba(13, 148, 136, 0.08);
+      --border: #e2e8f0;
+      --surface: #f8fafc;
+      --font: 'Inter', system-ui, sans-serif;
+      --font-head: 'IBM Plex Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); line-height: 1.6; font-size: 15px; background: var(--bg); }
+    .doc { max-width: 960px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+    @media print { .doc { max-width: 100%; padding: 1rem; } .no-print { display: none !important; } }
+    .cover { text-align: center; padding: 3rem 0 4rem; border-bottom: 2px solid var(--accent); }
+    .cover h1 { font-family: var(--font-head); font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+    .cover .subtitle { color: var(--text-muted); font-size: 1rem; }
+    .cover .meta { margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted); }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; margin: 2rem 0; }
+    .toc h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .toc ul { list-style: none; }
+    .toc li { margin: 0.4rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    h2 { font-family: var(--font-head); font-size: 1.35rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text); }
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    ul, ol { margin: 0 0 1rem 1.5rem; color: var(--text-muted); }
+    li { margin-bottom: 0.35rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 0.6rem 0.9rem; text-align: left; vertical-align: top; }
+    th { background: var(--surface); font-weight: 600; color: var(--text); }
+    td { color: var(--text-muted); }
+    .rationale-col { min-width: 280px; font-size: 0.85rem; }
+    .choice-col { font-weight: 600; color: var(--accent); }
+    .callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+    .callout p { margin-bottom: 0; }
+    .callout strong { color: var(--text); }
+    pre, code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.85em; }
+    pre { padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+    code { padding: 0.15rem 0.4rem; }
+    .page-break { page-break-before: always; }
+    .decision-block { margin-bottom: 2rem; }
+    .decision-block .analysis { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin: 0.75rem 0; font-size: 0.9rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <p class="no-print" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Open in a browser to view. Print-friendly.</p>
+    <header class="cover">
+      <h1>Decision Matrix</h1>
+      <p class="subtitle">Framework & Tool Selection</p>
+      <p class="meta">Cloud Migration Command Center · End-to-end architectural decisions with rationale</p>
+    </header>
+
+    <nav class="toc no-print">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="#summary">1. Summary table (with rationale)</a></li>
+        <li><a href="#tree">2. Decision tree</a></li>
+        <li><a href="#orchestration">3. Multi-agent orchestration</a></li>
+        <li><a href="#observability">4. Observability</a></li>
+        <li><a href="#vectordb">5. Vector DB / KB</a></li>
+        <li><a href="#llm">6. LLM provider</a></li>
+        <li><a href="#websearch">7. Web search</a></li>
+        <li><a href="#state">8. State persistence</a></li>
+        <li><a href="#async">9. Async pattern</a></li>
+        <li><a href="#report">10. Report format</a></li>
+        <li><a href="#api">11. API pattern</a></li>
+        <li><a href="#frontend">12. Frontend flow</a></li>
+        <li><a href="#llm-flex">13. LLM provider flexibility</a></li>
+      </ul>
+    </nav>
+
+    <section id="summary">
+      <h2>1. Summary table (with rationale)</h2>
+      <p>Key decisions, candidates, final choice, and rationale for each.</p>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Candidates</th>
+              <th>Final choice</th>
+              <th class="rationale-col">Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Multi-agent orchestration</td>
+              <td>LangGraph, LangChain LCEL, custom, AutoGen, CrewAI</td>
+              <td class="choice-col">LangGraph</td>
+              <td class="rationale-col">Flow has conditional logic (Research fail → end; else → Summarize). LangGraph's graph model and conditional edges fit. LangChain LCEL is linear-only. Custom Python would reinvent state and tracing. AutoGen/CrewAI target conversational agents, not our sequential pipeline. LangGraph gives native LangSmith traces; used by LinkedIn, Uber, Klarna.</td>
+            </tr>
+            <tr>
+              <td>Observability</td>
+              <td>LangSmith, custom, OpenTelemetry, Datadog</td>
+              <td class="choice-col">LangSmith</td>
+              <td class="rationale-col">Built for LangChain/LangGraph. Zero config: set env vars, traces appear. Custom logging needs manual instrumentation. OpenTelemetry has experimental LangChain support. Datadog is general APM. LangSmith shows trace trees, token costs, latency per step—what Admin Diagnostics needs.</td>
+            </tr>
+            <tr>
+              <td>Vector DB / KB</td>
+              <td>Pinecone, Weaviate, Milvus, Chroma, Qdrant</td>
+              <td class="choice-col">Pinecone</td>
+              <td class="rationale-col">Project is pinecone-semantic-search; Pinecone already integrated. Switching would mean new index, embeddings, usage tracking. Weaviate/Milvus/Qdrant need self-host or cloud. Chroma is lighter but less scalable. No business reason to change.</td>
+            </tr>
+            <tr>
+              <td>LLM provider</td>
+              <td>OpenAI, Anthropic, Azure, Vertex</td>
+              <td class="choice-col">OpenAI (GPT-4o-mini)</td>
+              <td class="rationale-col">Chat/summarization already use OpenAI. Adding another provider increases config and testing. GPT-4o-mini balances quality and cost for synthesis. Anthropic has strong reasoning but different API. Azure/Vertex add enterprise setup. Consistency and simplicity favor OpenAI.</td>
+            </tr>
+            <tr>
+              <td>Web search</td>
+              <td>Tavily, Serper, Exa, Bing</td>
+              <td class="choice-col">Tavily</td>
+              <td class="rationale-col">We need clean snippets for LLM context, not raw HTML. Tavily is built for RAG/LLM use. Serper returns Google results but less curated. Exa is semantic search—different paradigm. KB-first strategy; Tavily only when KB sparse, so cost bounded.</td>
+            </tr>
+            <tr>
+              <td>State persistence</td>
+              <td>SQLite, Postgres, JSON, in-memory</td>
+              <td class="choice-col">SQLite</td>
+              <td class="rationale-col">MVP needs persistence without new infra. SQLite is single file, no server. Postgres overkill for current load. JSON has concurrency issues. In-memory loses data on restart. SQLite allows pluggable store; migrate to Postgres when scaling.</td>
+            </tr>
+            <tr>
+              <td>Async pattern</td>
+              <td>Polling, SSE, WebSockets, Celery</td>
+              <td class="choice-col">Polling</td>
+              <td class="rationale-col">Research/Summarize take 10–60s. Polling simplest: client calls GET every 2–3s. SSE needs streaming endpoints. WebSockets overkill. Celery needs Redis and workers. Minimal complexity for Phase 1; SSE later for better UX.</td>
+            </tr>
+            <tr>
+              <td>Report format</td>
+              <td>Markdown, DOCX, PDF, HTML</td>
+              <td class="choice-col">Markdown + DOCX</td>
+              <td class="rationale-col">LLMs output Markdown naturally. Preview MD in UI. For download, convert to DOCX via python-docx (already in use). PDF harder to generate. HTML less portable. MD + DOCX gives quick preview and standard business deliverable.</td>
+            </tr>
+            <tr>
+              <td>API pattern</td>
+              <td>Step-by-step, run all</td>
+              <td class="choice-col">Step-by-step</td>
+              <td class="rationale-col">Users need to see progress (Profile → Research → Report). Step-by-step lets them advance and retry individual steps. Single "run all" would be black box. LangGraph can run full flow internally; API stays step-by-step for clarity and debuggability.</td>
+            </tr>
+            <tr>
+              <td>Profile UI</td>
+              <td>Single form, wizard, tabs</td>
+              <td class="choice-col">Wizard + 7 pillar tabs</td>
+              <td class="rationale-col">Seven pillars would overwhelm a single form. Tabs group by domain. Wizard guides flow. "Continue to [next section]" enforces filling all pillars before Research. Matches real migration intake forms.</td>
+            </tr>
+            <tr>
+              <td>LLM provider flexibility</td>
+              <td>Single provider, abstraction</td>
+              <td class="choice-col">Provider abstraction</td>
+              <td class="rationale-col">get_llm() factory supports OpenAI, Anthropic, Azure. Switch via LLM_PROVIDER env var. No code changes. Supports enterprise (Azure data residency) and model choice (Anthropic).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tree" class="page-break">
+      <h2>2. Decision tree</h2>
+      <pre style="font-size: 0.85rem;">Need orchestrator for multi-agents? → LangGraph (graph, conditional edges, LangSmith)
+Need observability?                  → LangSmith (zero-config, trace trees)
+Need vector KB?                      → Pinecone (project foundation)
+Need LLM?                            → OpenAI (existing, LangChain support)
+Need web search when KB sparse?      → Tavily (LLM-oriented snippets)
+Need state persistence?              → SQLite (no infra, pluggable)
+Need async for long ops?             → Polling (simplest; SSE later)
+Need report output?                  → Markdown + DOCX (preview + download)</pre>
+    </section>
+
+    <section id="orchestration" class="decision-block">
+      <h2>3. Multi-agent orchestration</h2>
+      <p><strong>Need:</strong> Coordinate Data Collector, Research, Summarizer with conditional logic and shared state.</p>
+      <p><strong>Candidates:</strong> LangGraph, LangChain LCEL, custom Python, AutoGen, CrewAI</p>
+      <div class="analysis"><strong>Analysis:</strong> Our flow has a branch: if Research fails, end; else continue to Summarize. LangChain LCEL is linear. Custom Python would require manual state and no tracing. AutoGen/CrewAI focus on conversational agents, not our sequential pipeline. LangGraph's StateGraph and conditional edges map directly to our flow.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">LangGraph</span></p>
+      <p><strong>Rationale:</strong> Explicit graph model matches flow. Conditional edges handle errors. Typed shared state. Native LangSmith. Industry adoption. Can run step-by-step or full graph.</p>
+    </section>
+
+    <section id="observability" class="decision-block">
+      <h2>4. Observability & tracing</h2>
+      <p><strong>Need:</strong> Trace agent calls, LLM invocations, token usage, latency for debugging and Admin Diagnostics.</p>
+      <p><strong>Candidates:</strong> LangSmith, custom logging, OpenTelemetry, Datadog</p>
+      <div class="analysis"><strong>Analysis:</strong> We use LangChain/LangGraph. LangSmith is built for this stack. Custom logging would need manual instrumentation. OpenTelemetry has experimental LangChain support. Datadog is general-purpose. LangSmith gives trace trees, token usage, cost per run with minimal setup.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">LangSmith</span></p>
+      <p><strong>Rationale:</strong> Zero-config with LANGCHAIN_TRACING_V2=true. Trace trees, token costs. Fallback: if not configured, tracing disabled. Aligns with Admin Diagnostics.</p>
+    </section>
+
+    <section id="vectordb" class="decision-block">
+      <h2>5. Vector database / Knowledge Base</h2>
+      <p><strong>Need:</strong> Semantic search over migration docs for Research Agent.</p>
+      <p><strong>Candidates:</strong> Pinecone, Weaviate, Milvus, Chroma, Qdrant</p>
+      <div class="analysis"><strong>Analysis:</strong> Project is pinecone-semantic-search. Pinecone already integrated. Switching would require new index, embedding pipeline, spend guardrails. Weaviate/Milvus/Qdrant need self-host or cloud. No strong reason to change.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Pinecone</span></p>
+      <p><strong>Rationale:</strong> Project foundation. Existing search_knowledge_base(), namespaces. No new infra. Usage tracker and spend guardrails in place.</p>
+    </section>
+
+    <section id="llm" class="decision-block">
+      <h2>6. LLM provider</h2>
+      <p><strong>Need:</strong> LLM for Research synthesis and Summarizer report generation.</p>
+      <p><strong>Candidates:</strong> OpenAI, Anthropic Claude, Azure OpenAI, Vertex</p>
+      <div class="analysis"><strong>Analysis:</strong> Chat and summarization already use OpenAI. Adding another provider means extra config and testing. GPT-4o-mini sufficient for synthesis at lower cost. Anthropic would require separate integration. Consistency and simplicity favor OpenAI.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">OpenAI (GPT-4o-mini)</span></p>
+      <p><strong>Rationale:</strong> Already used. langchain-openai with LangSmith. Configurable via OPENAI_MODEL, OPENAI_TEMPERATURE, OPENAI_MAX_TOKENS.</p>
+    </section>
+
+    <section id="websearch" class="decision-block">
+      <h2>7. Web search (when KB sparse)</h2>
+      <p><strong>Need:</strong> Fetch migration best practices when KB has little relevant content.</p>
+      <p><strong>Candidates:</strong> Tavily, Serper, Exa, Bing</p>
+      <div class="analysis"><strong>Analysis:</strong> We need clean snippets for LLM context, not raw HTML. Tavily built for RAG/LLM. Serper less curated. Exa is different paradigm. KB-first; Tavily only when sparse, so cost bounded.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Tavily</span></p>
+      <p><strong>Rationale:</strong> Designed for LLM use. Simple API. KB-first; Tavily as fallback. Can swap if limits/cost become an issue.</p>
+    </section>
+
+    <section id="state" class="decision-block">
+      <h2>8. State persistence</h2>
+      <p><strong>Need:</strong> Persist assessment state across requests.</p>
+      <p><strong>Candidates:</strong> SQLite, PostgreSQL, JSON files, in-memory</p>
+      <div class="analysis"><strong>Analysis:</strong> MVP needs persistence without new infra. SQLite is built-in, single file. Postgres overkill. JSON has concurrency issues. In-memory loses data. SQLite allows pluggable store; migrate to Postgres when scaling.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">SQLite</span></p>
+      <p><strong>Rationale:</strong> No extra infra. data/assessments.db. Pluggable store. Easy migration path.</p>
+    </section>
+
+    <section id="async" class="decision-block">
+      <h2>9. Async pattern (long-running Research/Summarize)</h2>
+      <p><strong>Need:</strong> Research 10–60s, Summarize 5–30s; cannot block HTTP.</p>
+      <p><strong>Candidates:</strong> Polling, SSE, WebSockets, Celery</p>
+      <div class="analysis"><strong>Analysis:</strong> Polling simplest: client calls GET every 2–3s. SSE needs streaming. WebSockets overkill. Celery needs Redis. Phase 1: minimal complexity; SSE later for progress messages.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Polling</span></p>
+      <p><strong>Rationale:</strong> Client polls until status completed or error. No streaming infra. Add SSE later.</p>
+    </section>
+
+    <section id="report" class="decision-block">
+      <h2>10. Report output format</h2>
+      <p><strong>Need:</strong> Report preview in UI + downloadable file.</p>
+      <p><strong>Candidates:</strong> Markdown, DOCX, PDF, HTML</p>
+      <div class="analysis"><strong>Analysis:</strong> LLMs output Markdown naturally. Need both preview and download. DOCX is standard. python-docx already in requirements. Markdown for preview, DOCX for download covers both.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Markdown + DOCX</span></p>
+      <p><strong>Rationale:</strong> LLM outputs MD. Preview in UI. Convert to DOCX for download. python-docx available.</p>
+    </section>
+
+    <section id="api" class="decision-block">
+      <h2>11. API pattern</h2>
+      <p><strong>Need:</strong> Expose assessment flow to frontend.</p>
+      <p><strong>Candidates:</strong> Step-by-step endpoints, single "run all"</p>
+      <div class="analysis"><strong>Analysis:</strong> Users move through Profile → Research → Report. Step-by-step lets them see progress and retry individual steps. Single "run all" would hide intermediate state. LangGraph can run full flow internally; API stays step-by-step.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Step-by-step</span></p>
+      <p><strong>Rationale:</strong> POST /start → PUT /profile → POST /research → POST /summarize. User advances explicitly. Easier retry and partial re-run.</p>
+    </section>
+
+    <section id="frontend" class="decision-block">
+      <h2>12. Frontend assessment flow</h2>
+      <p><strong>Need:</strong> Guided UI for profile → research → report.</p>
+      <p><strong>Candidates:</strong> Single form, wizard, separate routes</p>
+      <div class="analysis"><strong>Analysis:</strong> Seven pillars would overwhelm a single form. Tabs group by domain. Wizard guides flow. "Continue to [next section]" ensures all pillars visited before Research. Aligns with real migration intake forms.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Wizard + 7 pillar tabs</span></p>
+      <p><strong>Rationale:</strong> Route /assessment. Steps: 1. Profile (7 tabs), 2. Research, 3. Report. Section-to-section navigation; "Save & continue to research" only on final section.</p>
+    </section>
+
+    <section id="llm-flex" class="decision-block">
+      <h2>13. LLM provider flexibility</h2>
+      <p><strong>Need:</strong> Ability to switch LLM providers (OpenAI, Anthropic, Azure) without code changes.</p>
+      <p><strong>Approach:</strong> Provider abstraction via get_llm() factory in backend/services/llm_provider.py</p>
+      <div class="analysis"><strong>Implementation:</strong> All LLM calls (Chat, Research Agent, Summarizer Agent) use get_llm(). Provider selected via LLM_PROVIDER=openai|anthropic|azure_openai. Each provider uses its LangChain integration. Adding a new provider = add branch in get_llm() + document env vars.</div>
+      <p><strong>Decision:</strong> <span class="choice-col">Provider abstraction</span></p>
+      <p><strong>Rationale:</strong> Single abstraction point. No code changes to switch; only env vars. Supports enterprise requirements (Azure for data residency, Anthropic for alternative models). See <a href="ARCHITECTURE_DESIGN.html#llm" style="color: var(--accent);">ARCHITECTURE_DESIGN.html §3</a>.</p>
+    </section>
+
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+      <p>Decision Matrix · Cloud Migration Command Center · v1.2</p>
+      <p>See also: <a href="ARCHITECTURE_DESIGN.html" style="color: var(--accent);">ARCHITECTURE_DESIGN.html</a> (umbrella) · <a href="ASSESSMENT_DESIGN.html" style="color: var(--accent);">ASSESSMENT_DESIGN.html</a> · <a href="WIREFRAMES.html" style="color: var(--accent);">WIREFRAMES.html</a> · <a href="ADMIN_COMMAND_CENTER_DESIGN.html" style="color: var(--accent);">ADMIN_COMMAND_CENTER_DESIGN.html</a></p>
+    </footer>
+  </div>
+</body>
+</html>

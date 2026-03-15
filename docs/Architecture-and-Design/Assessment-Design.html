@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assessment Module – Architecture & Design Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.5/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #4a5568;
+      --accent: #0d9488;
+      --accent-soft: rgba(13, 148, 136, 0.08);
+      --border: #e2e8f0;
+      --surface: #f8fafc;
+      --font: 'Inter', system-ui, sans-serif;
+      --font-head: 'IBM Plex Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+      background: var(--bg);
+    }
+    .doc {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+    }
+    @media print {
+      .doc { max-width: 100%; padding: 1rem; }
+      .no-print { display: none !important; }
+    }
+    .cover {
+      text-align: center;
+      padding: 3rem 0 4rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .cover h1 {
+      font-family: var(--font-head);
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .cover .subtitle { color: var(--text-muted); font-size: 1rem; }
+    .cover .meta {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin: 2rem 0;
+    }
+    .toc h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .toc ul { list-style: none; }
+    .toc li { margin: 0.4rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .toc a:hover { text-decoration: underline; }
+    h2 {
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text); }
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    ul, ol { margin: 0 0 1rem 1.5rem; color: var(--text-muted); }
+    li { margin-bottom: 0.35rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    th, td { border: 1px solid var(--border); padding: 0.6rem 0.9rem; text-align: left; }
+    th { background: var(--surface); font-weight: 600; color: var(--text); }
+    td { color: var(--text-muted); }
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+    .diagram-wrap .mermaid { display: flex; justify-content: center; }
+    .diagram-caption {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+    .callout {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .callout p { margin-bottom: 0; }
+    .callout strong { color: var(--text); }
+    pre, code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.85em;
+    }
+    pre { padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+    code { padding: 0.15rem 0.4rem; }
+    pre code { padding: 0; border: 0; background: none; }
+    .page-break { page-break-before: always; }
+    .badge { display: inline-block; background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <p class="no-print" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Open in a browser to view. Diagrams render via Mermaid.js. Print-friendly.</p>
+    <header class="cover">
+      <h1>Assessment Module</h1>
+      <p class="subtitle">Architecture & Design Document</p>
+      <p class="meta">Multi-Agent System for Migration Assessments · Design Phase v1.0</p>
+    </header>
+
+    <section id="exec-summary">
+      <h2>1. Executive Summary</h2>
+      <p>The Assessment module uses a <strong>two-role flow</strong>. <strong>Application Users</strong> fill the profile and submit for assessment (no research or report). <strong>Admins</strong> run research, generate and edit reports, and download. See <a href="MIGRATION_REQUEST_FLOW.md">Migration Request Flow</a>.</p>
+      <p><strong>Application User:</strong> Profile (7 pillars) → Validate &amp; Submit → Confirmation. <strong>Admin:</strong> View submissions → Run Research → Generate Report → Edit/Enhance → Download.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart LR
+    subgraph AppUser["Application User"]
+        A1[Profile]
+        A2[Validate]
+        A3[Submit]
+        A4[Confirmation]
+        A1 --> A2 --> A3 --> A4
+    end
+    subgraph Admin["Admin"]
+        B1[View submissions]
+        B2[Research Agent]
+        B3[Summarizer]
+        B4[Edit Report]
+        B5[Download]
+        B1 --> B2 --> B3 --> B4 --> B5
+    end
+    A3 -.->|stored, notified| B1
+        </div>
+        <p class="diagram-caption">Figure 1: Two-role flow – Application User submits; Admin runs research &amp; report</p>
+      </div>
+    </section>
+
+    <nav class="toc no-print">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="MIGRATION_REQUEST_FLOW.md">Migration Request Flow (two-role)</a></li>
+        <li><a href="DECISION_MATRIX.html">Decision Matrix (framework & tool selection)</a></li>
+        <li><a href="#exec-summary">1. Executive Summary</a></li>
+        <li><a href="#system-arch">2. System Architecture</a></li>
+        <li><a href="#agent-design">3. Agent Design</a></li>
+        <li><a href="#data-flow">4. Data Flow</a></li>
+        <li><a href="#sequence">5. Sequence Diagram</a></li>
+        <li><a href="#api-design">6. API Design</a></li>
+        <li><a href="#profile-validation">6b. Profile validation flow</a></li>
+        <li><a href="#frontend">7. Frontend Architecture</a></li>
+        <li>        <a href="#tradeoffs">8. Trade-offs</a></li>
+        <li><a href="#phases">9. Implementation Phases</a></li>
+        <li><a href="#admin-cc">10. Admin Command Center</a></li>
+      </ul>
+    </nav>
+
+    <section id="system-arch" class="page-break">
+      <h2>2. System Architecture</h2>
+      <p>Application User frontend: Profile + Submit + Confirmation. Admin: Submissions list, open request, Research, Report, Edit, Download. Research and Summarizer agents run only in Admin flow.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    subgraph AppUserUI["Application User UI"]
+        F1[Profile Form]
+        F2[Submit]
+        F3[Confirmation]
+    end
+    subgraph AdminUI["Admin UI"]
+        F4[Submissions List]
+        F5[Research Step]
+        F6[Report / Edit]
+        F7[Download]
+    end
+    subgraph Backend
+        API[Assessment API]
+        DC[Data Collector]
+        RA[Research Agent]
+        SA[Summarizer Agent]
+        Store[(SQLite Store)]
+    end
+    subgraph External
+        KB[(Pinecone KB)]
+        Tavily[Tavily API]
+        OpenAI[OpenAI LLM]
+    end
+    F1 --> API
+    F2 --> API
+    F4 --> API
+    F5 --> API
+    F6 --> API
+    API --> DC
+    API --> RA
+    API --> SA
+    DC --> Store
+    RA --> KB
+    RA --> Tavily
+    RA --> OpenAI
+    SA --> OpenAI
+    SA --> Store
+        </div>
+        <p class="diagram-caption">Figure 2: System architecture – two roles, Admin-only research/report</p>
+      </div>
+    </section>
+
+    <section id="agent-design">
+      <h2>3. Agent Design</h2>
+      <h3>3.1 Agent Overview</h3>
+      <table>
+        <thead>
+          <tr><th>Agent</th><th>Role</th><th>Inputs</th><th>Outputs</th><th>Tools</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Data Collector</strong></td><td>Gather application profile</td><td>User form</td><td>ApplicationProfile (JSON)</td><td>Form UI</td></tr>
+          <tr><td><strong>Research Agent</strong></td><td>Find recommendations & approach</td><td>ApplicationProfile</td><td>ApproachDocument</td><td>Pinecone KB, Tavily</td></tr>
+          <tr><td><strong>Summarizer Agent</strong></td><td>Produce final report</td><td>Profile + Approach</td><td>Assessment Report</td><td>OpenAI LLM</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 Research Agent – Decision Flow</h3>
+      <p>How the Research Agent decides between KB and web search:</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[ApplicationProfile] --> B[Build search query]
+    B --> C[Query Pinecone KB]
+    C --> D{Relevant chunks found?}
+    D -->|Yes| E[Use KB chunks only]
+    D -->|No| F[Call Tavily web search]
+    F --> G[Combine KB and web results]
+    E --> H[LLM synthesis]
+    G --> H
+    H --> I[Approach Document]
+        </div>
+        <p class="diagram-caption">Figure 3: Research Agent – KB-first, web fallback</p>
+      </div>
+
+      <h3>3.3 Data Model Flow</h3>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart LR
+    P1[Profile]
+    P2[Approach]
+    P3[Report]
+    P1 --> P2
+    P2 --> P3
+        </div>
+        <p class="diagram-caption">Figure 4: Data model – Profile to Approach to Report</p>
+      </div>
+    </section>
+
+    <section id="data-flow" class="page-break">
+      <h2>4. Data Flow</h2>
+      <p><strong>Application User:</strong> Fill form → validate → submit → store (status: submitted) → notify Admins → confirmation. <strong>Admin:</strong> Open submission → trigger Research → Approach Doc → trigger Summarize → Report → edit (optional) → download.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    subgraph AppUser["Application User"]
+        U1[User fills form] --> P1[ApplicationProfile]
+        P1 --> V1[Validate]
+        V1 --> SUB[Submit]
+        SUB --> S1[(SQLite submitted)]
+        S1 --> NOTIFY[Notify Admins]
+        NOTIFY --> CONF[Confirmation]
+    end
+    subgraph Admin["Admin"]
+        A1[View submissions] --> A2[Open request]
+        A2 --> T1[Trigger Research]
+        T1 --> KB1[Pinecone search]
+        KB1 --> T2{Tavily needed?}
+        T2 -->|Yes| W1[Tavily API]
+        T2 -->|No| L1[LLM synthesis]
+        W1 --> L1
+        L1 --> AD[Approach Document]
+        AD --> T3[Trigger Summarize]
+        T3 --> L2[LLM report generation]
+        L2 --> R1[Assessment Report]
+        R1 --> EDIT[Edit / Enhance]
+        EDIT --> DL[Download DOCX]
+    end
+        </div>
+        <p class="diagram-caption">Figure 5: Data flow – Application User submits; Admin runs research &amp; report</p>
+      </div>
+    </section>
+
+    <section id="sequence">
+      <h2>5. Sequence Diagram</h2>
+      <p><strong>Application User</strong> (submit only) and <strong>Admin</strong> (research, report, edit, download):</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+sequenceDiagram
+    participant AU as App User
+    participant F as Frontend
+    participant API as Backend API
+    participant DC as Data Collector
+    participant ADM as Admin
+    participant RA as Research Agent
+    participant SA as Summarizer
+    participant KB as Pinecone KB
+    participant T as Tavily
+
+    AU->>F: Start assessment
+    F->>API: POST assessment start
+    API-->>F: assessment_id
+
+    AU->>F: Fill profile, Submit for assessment
+    F->>API: PUT profile, POST submit
+    API->>DC: Validate and store
+    DC-->>API: OK, status=submitted
+    API-->>F: OK
+    Note over F: Confirmation: request submitted
+
+    Note over ADM: Admin opens submission
+    ADM->>F: Open assessment (Admin)
+    F->>API: GET assessment
+    API-->>F: Profile + status
+
+    ADM->>F: Run research
+    F->>API: POST research
+    API->>RA: Execute
+    RA->>KB: Semantic search
+    KB-->>RA: Chunks
+    RA->>T: Web search (if needed)
+    T-->>RA: Snippets
+    RA->>RA: LLM synthesis
+    RA-->>API: Approach doc
+    API-->>F: Approach document
+
+    ADM->>F: Generate report
+    F->>API: POST summarize
+    API->>SA: Execute
+    SA->>SA: LLM report generation
+    SA-->>API: Report
+    API-->>F: Report (preview)
+    ADM->>F: Edit report (optional)
+    F->>API: PUT report
+    ADM->>F: Download
+    F->>API: GET report (DOCX)
+    API-->>F: File
+        </div>
+        <p class="diagram-caption">Figure 6: Sequence – Application User submits; Admin runs research, report, edit, download</p>
+      </div>
+    </section>
+
+    <section id="api-design" class="page-break">
+      <h2>6. API Design</h2>
+      <p>REST endpoints. <strong>Application User</strong> uses start, profile, validate, submit. <strong>Admin</strong> uses list, get, research, summarize, report (edit + download).</p>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Actor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>POST</td><td><code>/api/assessment/start</code></td><td>Create new assessment; returns <code>assessment_id</code></td><td>App User</td></tr>
+          <tr><td>PUT</td><td><code>/api/assessment/{id}/profile</code></td><td>Save/update ApplicationProfile</td><td>App User</td></tr>
+          <tr><td>GET</td><td><code>/api/assessment/{id}/validate</code></td><td>Validate profile; returns <code>{ valid, errors, warnings, findings }</code></td><td>App User</td></tr>
+          <tr><td>POST</td><td><code>/api/assessment/{id}/submit</code></td><td>Submit for assessment (store, status=submitted, notify Admins). No research/report.</td><td>App User</td></tr>
+          <tr><td>GET</td><td><code>/api/admin/assessments</code></td><td>List all assessments (filter by status); for Admin dashboard</td><td>Admin</td></tr>
+          <tr><td>GET</td><td><code>/api/assessment/{id}</code></td><td>Get full assessment state (profile, approach, report, status)</td><td>Both</td></tr>
+          <tr><td>POST</td><td><code>/api/assessment/{id}/research</code></td><td>Trigger Research Agent; returns ApproachDocument</td><td>Admin</td></tr>
+          <tr><td>POST</td><td><code>/api/assessment/{id}/summarize</code></td><td>Trigger Summarizer; returns report</td><td>Admin</td></tr>
+          <tr><td>PUT</td><td><code>/api/assessment/{id}/report</code></td><td>Update report (edit/enhance)</td><td>Admin</td></tr>
+          <tr><td>GET</td><td><code>/api/assessment/{id}/report</code></td><td>Download report file (DOCX)</td><td>Admin</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>Async pattern:</strong> Research and Summarize (Admin only) can take 10–60 seconds. Use polling: client calls <code>GET /assessment/{id}</code> every 2–3s until status advances.
+      </div>
+    </section>
+
+    <section id="profile-validation">
+      <h2>6b. Profile validation flow</h2>
+      <p><strong>Application User</strong> flow: Profile must pass per-section and full validation. Validation runs when clicking &quot;Continue to [next section]&quot; and when clicking <strong>&quot;Submit for assessment&quot;</strong> (all pillars). On success, request is stored (status=submitted) and Admins notified; no Research or Report. Required: Overview (RTO, RPO, users, priority), Architecture (description or diagram), Data (DB migration Yes/No; if Yes then data volume, DB types, current DB description), BC&amp;DR (all four), Security (auth, encryption). Cost and Project optional.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart LR
+    subgraph Profile["Application User – Profile"]
+        O[Overview]
+        A[Architecture]
+        D[Data]
+        B[BC & DR]
+        C[Cost]
+        S[Security]
+        P[Project]
+    end
+    O -->|Validate| A
+    A -->|Validate| D
+    D -->|Validate| B
+    B -->|Validate| C
+    C -->|Validate| S
+    S -->|Validate| P
+    P -->|Submit + full validate| SUB[Submit]
+    SUB --> STORE[(Store submitted)]
+    STORE --> NOTIFY[Notify Admins]
+    NOTIFY --> CONF[Confirmation]
+        </div>
+        <p class="diagram-caption">Figure 6b: Application User – validate then Submit; Research/Report are Admin-only</p>
+      </div>
+    </section>
+
+    <section id="frontend">
+      <h2>7. Frontend Architecture</h2>
+      <p>Two-role UI: Application User sees Profile → Submit → Confirmation. Admin sees Submissions list → open → Research → Report → Edit → Download.</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    Home[Home]
+    Assessment[Assessment route]
+    Wizard[AssessmentWizard]
+    Form[ProfileForm]
+    Submit[Submit]
+    Confirmation[Confirmation]
+    Admin[Admin route]
+    List[Submissions List]
+    Detail[Assessment Detail]
+    Research[Research Step]
+    Report[Report / Edit]
+    Download[Download]
+    Home --> Assessment
+    Home --> Admin
+    Assessment --> Wizard
+    Wizard --> Form
+    Wizard --> Submit
+    Wizard --> Confirmation
+    Admin --> List
+    List --> Detail
+    Detail --> Research
+    Detail --> Report
+    Report --> Download
+        </div>
+        <p class="diagram-caption">Figure 7: Application User (Profile/Submit/Confirmation) and Admin (List/Research/Report/Edit/Download)</p>
+      </div>
+    </section>
+
+    <section id="tradeoffs">
+      <h2>8. Trade-offs</h2>
+      <table>
+        <thead>
+          <tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Orchestration</td><td>Step-by-step API</td><td>Easier debug; user sees progress</td></tr>
+          <tr><td>Web research</td><td>Tavily</td><td>LLM-oriented; no scraping</td></tr>
+          <tr><td>State</td><td>SQLite</td><td>Simple, persistent, no extra infra</td></tr>
+          <tr><td>Async</td><td>Polling</td><td>Simplest; add SSE later</td></tr>
+          <tr><td>Clarification loop</td><td>Defer to v2</td><td>Reduce scope for Phase 1</td></tr>
+          <tr><td>Report format</td><td>MD + DOCX</td><td>MD for preview; DOCX for download</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="phases" class="page-break">
+      <h2>9. Implementation Phases</h2>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    A1[Backend Router SQLite] --> A2[Research Agent]
+    A2 --> A3[Summarizer Agent]
+    A4[Frontend Wizard] --> A5[End-to-end MVP]
+    A3 --> A5
+    A5 --> B1[Add Tavily]
+    B1 --> B2[Tune queries]
+    B2 --> C1[DOCX generation]
+    C1 --> C2[Download endpoint]
+    C2 --> C3[Polish]
+        </div>
+        <p class="diagram-caption">Figure 8: Implementation phases</p>
+      </div>
+      <h3>Phase 1 – MVP</h3>
+      <ul>
+        <li>Backend: Assessment router, SQLite store, ApplicationProfile schema</li>
+        <li>Research Agent: KB only (no Tavily)</li>
+        <li>Summarizer: Markdown report</li>
+        <li>Frontend: Assessment route, ProfileForm, ResearchStep, ReportStep, polling</li>
+      </ul>
+      <h3>Phase 2 – Web Research</h3>
+      <ul>
+        <li>Add Tavily to Research Agent</li>
+        <li>Logic: KB first; if sparse → Tavily</li>
+      </ul>
+      <h3>Phase 3 – Polish</h3>
+      <ul>
+        <li>DOCX report generation</li>
+        <li>Download endpoint</li>
+        <li>Optional: Clarification loop, SSE</li>
+      </ul>
+    </section>
+
+    <section id="admin-cc" class="page-break">
+      <h2>10. Admin Command Center</h2>
+      <p>Admin-only dashboard with <strong>two tabs</strong>: Assessments (business) | Diagnostics (system/agent/request level).</p>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TB
+    T1[Assessments tab]
+    T2[Diagnostics tab]
+    T1 --> A1[Assessments summary]
+    T1 --> A2[KB health]
+    T1 --> A3[Assessment list]
+    T2 --> D1[LLM invocations]
+    T2 --> D2[Tokens used]
+    T2 --> D3[Request log]
+        </div>
+        <p class="diagram-caption">Figure 9: Admin Command Center – two tabs</p>
+      </div>
+      <h3>Tab 1: Assessments</h3>
+      <p>Business tracking: assessment list, status, errors, KB config, seed. Panels: Assessments summary, KB health, Errors (24h), Assessment list, KB config & seed, Recent errors.</p>
+      <h3>Tab 2: Diagnostics</h3>
+      <p>System/agent/request level: LLM invocations, tokens used, agent calls, data transfers, latency (p95), request log. See <strong>docs/ADMIN_COMMAND_CENTER_DESIGN.md</strong> for full spec.</p>
+      <h3>Visual design</h3>
+      <p>Dark/slate theme (#0f172a), status colors (green/amber/red), monospace for IDs, card-based layout.</p>
+      <h3>Access</h3>
+      <p>URL-based: /admin is admin-only. No auth in Phase 1.</p>
+    </section>
+
+    <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+      <p>Assessment Module – Architecture & Design Document · v1.0 · Design Phase</p>
+      <p>Cloud Migration Command Center · Center of Excellence</p>
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: { useMaxWidth: true, htmlLabels: true },
+      sequence: { useMaxWidth: true },
+      er: { useMaxWidth: true },
+      gantt: { useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

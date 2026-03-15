@@ -235,6 +235,7 @@ def validate_profile_content_with_llm(profile: ApplicationProfile) -> list[dict]
     try:
         from langchain_core.messages import HumanMessage, SystemMessage
 
+        from backend.services.diagnostics.recorder import invoke_llm
         from backend.services.llm_provider import get_llm
 
         llm = get_llm(temperature=0, max_tokens=1500)
@@ -256,10 +257,10 @@ Collected profile (key-value map):
 
 Reply with ONLY a JSON array of findings (or [] if no issues). Use the exact field names from the "Collected profile" list above for "field"."""
 
-        resp = llm.invoke([
+        resp = invoke_llm(llm, [
             SystemMessage(content=system),
             HumanMessage(content=user),
-        ])
+        ], "profile_content_validation", assessment_id=None)
         content = (resp.content or "").strip()
         llm_findings = _parse_llm_findings(content)
         # Dedupe by field (rules may have already flagged; prefer LLM message if both)

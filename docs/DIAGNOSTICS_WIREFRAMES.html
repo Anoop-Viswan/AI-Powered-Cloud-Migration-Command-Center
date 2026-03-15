@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnostics Tab – Wireframes | Cloud Migration Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --wire-bg: #fafafa;
+      --wire-border: #9ca3af;
+      --wire-border-light: #d1d5db;
+      --wire-text: #374151;
+      --wire-muted: #6b7280;
+      --accent: #0d9488;
+      --green: #059669;
+      --amber: #d97706;
+      --red: #dc2626;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-400: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; color: var(--wire-text); line-height: 1.5; padding: 2rem; }
+    .doc { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--wire-text); }
+    .intro { color: var(--wire-muted); font-size: 0.9rem; margin-bottom: 2rem; max-width: 720px; }
+    .intro a { color: var(--accent); }
+    .screen { background: white; border: 2px dashed var(--wire-border); border-radius: 12px; margin-bottom: 2.5rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .screen-header { background: var(--wire-bg); border-bottom: 2px dashed var(--wire-border); padding: 0.75rem 1.25rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--wire-muted); }
+    .screen-header .route { color: var(--accent); font-weight: 700; }
+    .screen-body { padding: 0; }
+
+    /* Admin Command Center header (dark) */
+    .diag-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem; background: var(--slate-900); color: white; }
+    .diag-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .diag-tabs { display: flex; gap: 0.25rem; }
+    .diag-tabs .tab { padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); cursor: pointer; border: none; }
+    .diag-tabs .tab.active { background: var(--accent); color: white; }
+    .diag-tabs .tab:not(.active):hover { background: rgba(255,255,255,0.15); }
+    .diag-actions { display: flex; gap: 0.5rem; align-items: center; }
+    .diag-actions .btn { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.8rem; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; }
+    .diag-actions .btn.primary { background: var(--accent); border-color: var(--accent); }
+
+    /* Alerts banner */
+    .diag-alerts { padding: 1rem 1.25rem; background: #fef3c7; border-bottom: 1px solid #fcd34d; }
+    .diag-alerts .alert { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .diag-alerts .alert:last-child { margin-bottom: 0; }
+    .diag-alerts .alert.warning { background: #fef9c3; border: 1px solid #facc15; color: #92400e; }
+    .diag-alerts .alert.critical { background: #fee2e2; border: 1px solid #f87171; color: #991b1b; }
+    .diag-alerts .alert strong { display: block; margin-bottom: 0.25rem; }
+    .diag-alerts .alert-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .diag-alerts .alert-actions button { padding: 0.3rem 0.6rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; }
+
+    /* Time range */
+    .diag-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem; background: var(--slate-800); color: white; }
+    .diag-toolbar .period { display: flex; gap: 0.25rem; }
+    .diag-toolbar .period button { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.85rem; background: var(--slate-700); color: var(--slate-400); border: none; cursor: pointer; }
+    .diag-toolbar .period button.active { background: var(--accent); color: white; }
+    .diag-toolbar .refresh { font-size: 0.8rem; color: var(--slate-400); }
+    .diag-toolbar .refresh span { color: #94a3b8; }
+
+    /* Summary cards */
+    .diag-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1.25rem; background: var(--slate-800); }
+    @media (max-width: 900px) { .diag-cards { grid-template-columns: 1fr 1fr; } }
+    .diag-card { background: var(--slate-700); border-radius: 8px; padding: 1rem; color: white; border: 1px solid rgba(255,255,255,0.06); }
+    .diag-card .label { font-size: 0.75rem; color: var(--slate-400); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .diag-card .value { font-size: 1.35rem; font-weight: 700; }
+    .diag-card .sub { font-size: 0.8rem; color: var(--slate-400); margin-top: 0.35rem; }
+    .diag-card .sub .cost { color: #86efac; font-weight: 600; }
+    .diag-card.highlight { border-color: var(--accent); background: rgba(13,148,136,0.15); }
+
+    /* External interfaces table */
+    .diag-section { padding: 1.25rem; border-bottom: 1px solid var(--wire-border-light); }
+    .diag-section:last-of-type { border-bottom: none; }
+    .diag-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--wire-text); }
+    .diag-interfaces { display: grid; gap: 1rem; }
+    .diag-interface { display: grid; grid-template-columns: 1fr auto auto auto auto auto; gap: 1rem; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid var(--wire-border-light); font-size: 0.9rem; }
+    @media (max-width: 768px) { .diag-interface { grid-template-columns: 1fr 1fr; } }
+    .diag-interface .name { font-weight: 600; color: var(--wire-text); }
+    .diag-interface .stat { text-align: right; }
+    .diag-interface .stat .val { font-weight: 600; }
+    .diag-interface .stat .lbl { font-size: 0.75rem; color: var(--wire-muted); }
+    .diag-interface .status { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .diag-interface .status.ok { background: #d1fae5; color: #065f46; }
+    .diag-interface .status.warn { background: #fef3c7; color: #92400e; }
+    .diag-interface .status.err { background: #fee2e2; color: #991b1b; }
+
+    /* Thresholds config form */
+    .diag-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; max-width: 640px; }
+    @media (max-width: 600px) { .diag-form { grid-template-columns: 1fr; } }
+    .diag-form .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .diag-form label { font-size: 0.85rem; font-weight: 500; color: var(--wire-text); }
+    .diag-form input { padding: 0.5rem 0.75rem; border: 1px solid var(--wire-border-light); border-radius: 6px; font-size: 0.9rem; }
+    .diag-form .hint { font-size: 0.75rem; color: var(--wire-muted); }
+    .diag-form .btn-save { margin-top: 0.5rem; padding: 0.5rem 1.25rem; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; width: fit-content; }
+
+    /* Patterns: usage + top consumers */
+    .diag-patterns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 768px) { .diag-patterns { grid-template-columns: 1fr; } }
+    .diag-chart-placeholder { height: 180px; background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 8px; border: 1px dashed var(--wire-border); display: flex; align-items: center; justify-content: center; color: var(--wire-muted); font-size: 0.85rem; }
+    .diag-top-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .diag-top-table th, .diag-top-table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--wire-border-light); }
+    .diag-top-table th { font-weight: 600; color: var(--wire-muted); }
+    .diag-top-table .pct { color: var(--accent); font-weight: 600; }
+
+    /* Request log table */
+    .diag-log-wrap { overflow-x: auto; }
+    .diag-log { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .diag-log th, .diag-log td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--wire-border-light); }
+    .diag-log th { background: #f8fafc; font-weight: 600; color: var(--wire-text); }
+    .diag-log td { color: var(--wire-muted); }
+    .diag-log .ok { color: var(--green); }
+    .diag-log .err { color: var(--red); }
+    .diag-log .link { color: var(--accent); cursor: pointer; text-decoration: underline; }
+    .diag-log-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; margin-top: 0.5rem; }
+    .diag-log-footer .export { font-size: 0.85rem; color: var(--accent); cursor: pointer; }
+    .diag-log-footer .pagination { font-size: 0.85rem; color: var(--wire-muted); }
+
+    /* LangSmith link */
+    .diag-langsmith { padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .diag-langsmith a { color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <h1>Diagnostics Tab – Wireframes</h1>
+    <p class="intro">
+      X-ray visibility into all external interfaces (LLM, Tavily, Pinecone): call counts, duration, approximate cost,
+      configurable thresholds, alerts when approaching or exceeding limits, and usage patterns. Design: <a href="DIAGNOSTICS_DESIGN.md">DIAGNOSTICS_DESIGN.md</a>.
+    </p>
+
+    <!-- Screen 1: Diagnostics tab – full view with alerts -->
+    <section class="screen">
+      <div class="screen-header">Wireframe · <span class="route">/admin</span> (Diagnostics tab active)</div>
+      <div class="screen-body">
+        <header class="diag-header">
+          <h2>Admin Command Center</h2>
+          <div class="diag-tabs">
+            <button type="button" class="tab">Assessments</button>
+            <button type="button" class="tab">Knowledge Base</button>
+            <button type="button" class="tab active">Diagnostics</button>
+          </div>
+          <div class="diag-actions">
+            <button type="button" class="btn">Refresh</button>
+          </div>
+        </header>
+
+        <!-- Alerts (when present) -->
+        <div class="diag-alerts">
+          <p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--wire-muted); margin-bottom: 0.5rem;">Active alerts</p>
+          <div class="alert warning">
+            <div>
+              <strong>Approaching limit</strong>
+              Daily token usage at 85% of limit (425,000 / 500,000 tokens).
+            </div>
+            <div class="alert-actions">
+              <button type="button">Acknowledge</button>
+              <button type="button">Mute 1h</button>
+            </div>
+          </div>
+          <div class="alert critical">
+            <div>
+              <strong>Limit exceeded</strong>
+              Daily cost limit exceeded: $5.02 / $5.00 (LLM approximate).
+            </div>
+            <div class="alert-actions">
+              <button type="button">Acknowledge</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time range -->
+        <div class="diag-toolbar">
+          <div class="period">
+            <button type="button" class="active">Last 24h</button>
+            <button type="button">Last 7 days</button>
+            <button type="button">Last 30 days</button>
+          </div>
+          <div class="refresh"><span>Data as of 2 min ago</span></div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="diag-cards">
+          <div class="diag-card">
+            <div class="label">LLM calls</div>
+            <div class="value">142</div>
+            <div class="sub">Research: 38 · Summarizer: 35 · Chat: 69</div>
+          </div>
+          <div class="diag-card">
+            <div class="label">Tokens (24h)</div>
+            <div class="value">57.3K</div>
+            <div class="sub">In: 45.2K · Out: 12.1K</div>
+          </div>
+          <div class="diag-card highlight">
+            <div class="label">Approx. cost (24h)</div>
+            <div class="value">$0.42</div>
+            <div class="sub cost">LLM only · model pricing</div>
+          </div>
+          <div class="diag-card">
+            <div class="label">Tavily · Pinecone</div>
+            <div class="value">24 · 156</div>
+            <div class="sub">Search calls · KB queries</div>
+          </div>
+        </div>
+
+        <!-- External interfaces -->
+        <div class="diag-section">
+          <h3>External interfaces</h3>
+          <div class="diag-interfaces">
+            <div class="diag-interface">
+              <span class="name">LLM (OpenAI · gpt-4o-mini)</span>
+              <div class="stat"><span class="val">142</span><div class="lbl">Calls</div></div>
+              <div class="stat"><span class="val">12.3s</span><div class="lbl">p95 latency</div></div>
+              <div class="stat"><span class="val">2</span><div class="lbl">Errors</div></div>
+              <div class="stat"><span class="val">$0.42</span><div class="lbl">Approx. cost</div></div>
+              <span class="status warn">Near limit</span>
+            </div>
+            <div class="diag-interface">
+              <span class="name">Tavily (web search)</span>
+              <div class="stat"><span class="val">24</span><div class="lbl">Calls</div></div>
+              <div class="stat"><span class="val">1.2s</span><div class="lbl">Avg latency</div></div>
+              <div class="stat"><span class="val">0</span><div class="lbl">Errors</div></div>
+              <div class="stat"><span class="val">—</span><div class="lbl">Cost</div></div>
+              <span class="status ok">OK</span>
+            </div>
+            <div class="diag-interface">
+              <span class="name">Pinecone (KB)</span>
+              <div class="stat"><span class="val">156</span><div class="lbl">Queries</div></div>
+              <div class="stat"><span class="val">0.3s</span><div class="lbl">p95 latency</div></div>
+              <div class="stat"><span class="val">0</span><div class="lbl">Errors</div></div>
+              <div class="stat"><span class="val">—</span><div class="lbl">Read units</div></div>
+              <span class="status ok">OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thresholds & config -->
+        <div class="diag-section">
+          <h3>Thresholds &amp; alerts</h3>
+          <p style="font-size: 0.85rem; color: var(--wire-muted); margin-bottom: 1rem;">Configure limits and get alerted when usage approaches or exceeds them. Helps avoid surprise bills and rate limits.</p>
+          <form class="diag-form">
+            <div class="field">
+              <label>Daily token limit</label>
+              <input type="number" value="500000" placeholder="e.g. 500000" />
+              <span class="hint">Total LLM tokens (in + out) per day</span>
+            </div>
+            <div class="field">
+              <label>Daily cost limit (USD)</label>
+              <input type="number" step="0.01" value="5.00" placeholder="e.g. 5.00" />
+              <span class="hint">Approximate LLM cost cap per day</span>
+            </div>
+            <div class="field">
+              <label>Alert when usage reaches (%)</label>
+              <input type="number" value="80" min="1" max="100" />
+              <span class="hint">Warn at e.g. 80% of limit</span>
+            </div>
+            <div class="field">
+              <label>Tavily daily call limit</label>
+              <input type="number" value="100" placeholder="e.g. 100" />
+              <span class="hint">Optional; leave empty for no cap</span>
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <button type="button" class="btn-save">Save thresholds</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Patterns -->
+        <div class="diag-section">
+          <h3>Patterns</h3>
+          <div class="diag-patterns">
+            <div>
+              <p style="font-size: 0.85rem; color: var(--wire-muted); margin-bottom: 0.5rem;">Usage over time (tokens / cost)</p>
+              <div class="diag-chart-placeholder">Chart: tokens or cost by day/hour (Last 7d)</div>
+            </div>
+            <div>
+              <p style="font-size: 0.85rem; color: var(--wire-muted); margin-bottom: 0.5rem;">Top consumers (by cost %)</p>
+              <table class="diag-top-table">
+                <thead><tr><th>Operation</th><th>Calls</th><th>Tokens</th><th>Cost</th><th>%</th></tr></thead>
+                <tbody>
+                  <tr><td>research</td><td>38</td><td>18.2K</td><td>$0.18</td><td class="pct">43%</td></tr>
+                  <tr><td>summarize</td><td>35</td><td>22.1K</td><td>$0.15</td><td class="pct">36%</td></tr>
+                  <tr><td>chat</td><td>69</td><td>8.1K</td><td>$0.06</td><td class="pct">14%</td></tr>
+                  <tr><td>quality_check</td><td>12</td><td>5.2K</td><td>$0.03</td><td class="pct">7%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request log -->
+        <div class="diag-section">
+          <h3>Request log (last 50)</h3>
+          <div class="diag-log-wrap">
+            <table class="diag-log">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Interface</th>
+                  <th>Operation</th>
+                  <th>Tokens in / out</th>
+                  <th>Latency</th>
+                  <th>Status</th>
+                  <th>Assessment</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>10:45:32</td>
+                  <td>LLM</td>
+                  <td>research</td>
+                  <td>2.1K / 450</td>
+                  <td>11.2s</td>
+                  <td class="ok">ok</td>
+                  <td><span class="link">f94e6e56</span></td>
+                </tr>
+                <tr>
+                  <td>10:44:18</td>
+                  <td>LLM</td>
+                  <td>summarize</td>
+                  <td>3.2K / 1.1K</td>
+                  <td>9.1s</td>
+                  <td class="ok">ok</td>
+                  <td><span class="link">f94e6e56</span></td>
+                </tr>
+                <tr>
+                  <td>10:43:02</td>
+                  <td>LLM</td>
+                  <td>chat</td>
+                  <td>0.8K / 120</td>
+                  <td>2.1s</td>
+                  <td class="ok">ok</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>10:42:15</td>
+                  <td>Tavily</td>
+                  <td>tavily_search</td>
+                  <td>—</td>
+                  <td>1.1s</td>
+                  <td class="ok">ok</td>
+                  <td><span class="link">f94e6e56</span></td>
+                </tr>
+                <tr>
+                  <td>10:40:15</td>
+                  <td>LLM</td>
+                  <td>research</td>
+                  <td>2.0K / —</td>
+                  <td>—</td>
+                  <td class="err">error</td>
+                  <td><span class="link">a1b2c3d4</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="diag-log-footer">
+            <span class="export">Export CSV</span>
+            <span class="pagination">1–50 of 142 · Next</span>
+          </div>
+        </div>
+
+        <!-- LangSmith -->
+        <div class="diag-section">
+          <h3>LangSmith</h3>
+          <div class="diag-langsmith">
+            <span>Full trace trees, token breakdown, and latency per step are available in LangSmith when tracing is enabled.</span>
+            <a href="#" target="_blank" rel="noopener">Open LangSmith project →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: No alerts (clean state) -->
+    <section class="screen">
+      <div class="screen-header">Wireframe · Diagnostics tab · No active alerts</div>
+      <div class="screen-body">
+        <header class="diag-header">
+          <h2>Admin Command Center</h2>
+          <div class="diag-tabs">
+            <button type="button" class="tab">Assessments</button>
+            <button type="button" class="tab">Knowledge Base</button>
+            <button type="button" class="tab active">Diagnostics</button>
+          </div>
+        </header>
+        <div class="diag-toolbar">
+          <div class="period">
+            <button type="button" class="active">Last 24h</button>
+            <button type="button">Last 7 days</button>
+            <button type="button">Last 30 days</button>
+          </div>
+        </div>
+        <div class="diag-cards">
+          <div class="diag-card"><div class="label">LLM calls</div><div class="value">28</div><div class="sub">Light usage</div></div>
+          <div class="diag-card"><div class="label">Tokens (24h)</div><div class="value">12.1K</div><div class="sub">In: 9.2K · Out: 2.9K</div></div>
+          <div class="diag-card highlight"><div class="label">Approx. cost (24h)</div><div class="value">$0.09</div><div class="sub cost">Within limits</div></div>
+          <div class="diag-card"><div class="label">Tavily · Pinecone</div><div class="value">4 · 32</div><div class="sub">Calls · Queries</div></div>
+        </div>
+        <div class="diag-section">
+          <p style="font-size: 0.9rem; color: var(--wire-muted);">No active alerts. All interfaces within configured thresholds. Request log, patterns, and threshold config follow below (same layout as above).</p>
+        </div>
+      </div>
+    </section>
+
+    <p style="margin-top: 2rem; font-size: 0.85rem; color: var(--wire-muted);">
+      See <a href="DIAGNOSTICS_DESIGN.md">DIAGNOSTICS_DESIGN.md</a> for API, data model, instrumentation, and implementation order.
+    </p>
+  </div>
+</body>
+</html>

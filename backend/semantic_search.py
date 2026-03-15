@@ -1,14 +1,11 @@
 """
-Pinecone Semantic Search System (Python)
-
-Search is restricted to a single project directory. Only files under that
-directory are indexed; search returns only those documents.
+Knowledge base semantic search (Pinecone), restricted to a single project directory.
 
 - Create the index first with the CLI (see README).
 - Set PINECONE_API_KEY in .env.
 - Set PINECONE_PROJECT_DIR to your project path, or use --project-dir.
-- Run: python semantic_search.py --project-dir /path/to/project --seed
-- Run: python semantic_search.py --project-dir /path/to/project --query "..."
+- Run: python -m backend.semantic_search --project-dir /path/to/project --seed
+- Run: python -m backend.semantic_search --project-dir /path/to/project --query "..."
 """
 
 import argparse
@@ -23,8 +20,8 @@ from dotenv import load_dotenv
 from pinecone import Pinecone
 from pinecone.exceptions import PineconeException
 
-from document_extractors import extract_content
-from usage_tracker import (
+from backend.document_extractors import extract_content
+from backend.usage_tracker import (
     add_read_units,
     add_write_units,
     check_spend_guardrail,
@@ -279,7 +276,7 @@ def search_knowledge_base(index, namespace, query, category_filter=None, applica
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Pinecone semantic search restricted to a single project directory"
+        description="Knowledge base semantic search restricted to a single project directory"
     )
     parser.add_argument(
         "--project-dir",
@@ -352,7 +349,7 @@ def main():
     # No --query: brief usage
     print(f"Project dir: {project_dir}")
     print(f"Namespace:   {namespace}")
-    print("Run a query: python semantic_search.py --project-dir <dir> --query 'your question'")
+    print("Run a query: python -m backend.semantic_search --project-dir <dir> --query 'your question'")
     print("Filter by file type: --category pdf | xlsx | pptx | md ...")
     print("Filter by application: --application <folder name under project dir>")
 

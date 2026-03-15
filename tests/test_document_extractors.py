@@ -2,7 +2,7 @@
 
 import pytest
 
-from document_extractors import extract_content, PROSE_EXTENSIONS, EXTRACTOR_EXTENSIONS
+from backend.document_extractors import extract_content, PROSE_EXTENSIONS, EXTRACTOR_EXTENSIONS
 
 
 class TestExtractPlainText:

@@ -16,8 +16,9 @@ DOLLARS_PER_1M_WRITE_UNITS = 2.0
 
 
 def _usage_path():
-    base = os.path.dirname(os.path.abspath(__file__))
-    return Path(base) / ".pinecone_usage.json"
+    """Store .pinecone_usage.json at project root (parent of backend/)."""
+    project_root = Path(__file__).resolve().parent.parent
+    return project_root / ".pinecone_usage.json"
 
 
 def _load():

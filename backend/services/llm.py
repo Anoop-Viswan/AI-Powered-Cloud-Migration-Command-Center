@@ -3,6 +3,7 @@ import os
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from backend.services.diagnostics.recorder import invoke_llm
 from backend.services.llm_provider import get_llm
 
 DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant with access to a knowledge base. Answer the user's question using only the provided context from the knowledge base. If the context does not contain enough information, say so and suggest rephrasing or broader questions. Keep answers concise and professional."""
@@ -48,7 +49,7 @@ def summarize_with_llm(
             SystemMessage(content=prompt),
             HumanMessage(content=user_content),
         ]
-        response = llm.invoke(messages)
+        response = invoke_llm(llm, messages, "chat", assessment_id=None)
         return response.content if hasattr(response, "content") else str(response) or "No response generated."
     except Exception as e:
         return f"LLM error: {str(e)}"
