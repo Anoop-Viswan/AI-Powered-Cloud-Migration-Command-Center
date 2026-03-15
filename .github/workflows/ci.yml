@@ -15,6 +15,11 @@ on:
   pull_request:
     branches: [main, master]
 
+# Opt into Node.js 24 for JavaScript actions (checkout, setup-node, setup-python).
+# Removes Node 20 deprecation warning; required from June 2026.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
@@ -44,7 +49,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -57,14 +62,13 @@ jobs:
   # Optional: run ALL interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) in CI.
   # When this job runs, it runs verify_setup.py which checks every interface, not just Pinecone.
   #
-  # When does this job run? Either:
-  #   A) Set secret RUN_INTERFACE_CHECKS = "true" (or "1") to explicitly enable "run all interface checks."
-  #   B) Or set PINECONE_API_KEY (and other keys as needed); job runs and checks all interfaces.
-  # Add the API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) so the script can verify each one.
+  # When does this job run? Set a repository VARIABLE (not secret): Settings → Actions → Variables →
+  # Add variable RUN_INTERFACE_CHECKS = "true" (or "1"). Job runs only when this variable is set.
+  # Add the API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) under Actions → Secrets.
   # Require this job in branch protection so main only merges when all required interfaces pass.
   interface-checks:
     runs-on: ubuntu-latest
-    if: ${{ secrets.RUN_INTERFACE_CHECKS == 'true' || secrets.RUN_INTERFACE_CHECKS == '1' || secrets.PINECONE_API_KEY != '' }}
+    if: ${{ vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' }}
     steps:
       - uses: actions/checkout@v4
 
