@@ -16,4 +16,5 @@ This folder contains all project documentation, organized by topic.
 - **Architecture and flows:** [Architecture-and-Design/](Architecture-and-Design/) (start with [Architecture.md](Architecture-and-Design/Architecture.md) and [Research-Flow.md](Architecture-and-Design/Research-Flow.md)).
 - **Deploy to cloud:** [Deployment/Deploy-Render.md](Deployment/Deploy-Render.md) or [Deployment/Deployment.md](Deployment/Deployment.md).
 
-**GitHub Pages:** The file [index.html](index.html) in this folder is the landing page. In repo Settings → Pages, set source to this branch and folder `/docs`.
+**Project info (journey, lessons, timeline):** [index.html](index.html) — single-page overview, timeline, tools, lessons learnt.  
+**Hosting these docs:** See [Deployment/Hosting-Project-Docs.md](Deployment/Hosting-Project-Docs.md) for GitHub Pages vs Render and how to publish.
