@@ -23,6 +23,8 @@ env:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v4
 
@@ -43,6 +45,8 @@ jobs:
 
   frontend-build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v4
 
@@ -69,6 +73,8 @@ jobs:
   interface-checks:
     runs-on: ubuntu-latest
     if: ${{ vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - uses: actions/checkout@v4
 
