@@ -130,6 +130,7 @@ Below are **recurring kinds of instructions** you gave and how they were applied
 4. **Define “clean state”** for re-runs (research, regenerate report) and implement full cleanup so re-running never leaves stale data or UI.
 5. **Use human-in-the-loop** when accuracy matters and the model might need more data; expose questions in the UI and allow “answer” or “proceed anyway.”
 6. **Keep a narrative like this** so the team (and future you) can see how guidance and iterations led to the current product and reuse the same patterns in the next project.
+7. **Docs “duplicate” means same content in two paths** (e.g. root vs subdir after a reorg), not “HTML vs MD.” When consolidating docs, keep HTMLs where the project webpages (e.g. GitHub Pages) expect them so links don’t break; remove only redundant copies (e.g. root .md when subdir has the canonical copy).
 
 ---
 

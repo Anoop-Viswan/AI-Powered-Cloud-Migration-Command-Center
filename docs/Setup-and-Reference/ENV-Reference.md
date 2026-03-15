@@ -2,6 +2,8 @@
 
 Copy `.env.example` to `.env` and fill in your keys. **Do not commit `.env`** (it is in `.gitignore`).
 
+**Cloud and other secret stores:** For Render, GitHub Actions, and using Azure Key Vault or AWS Secrets Manager, see [Deployment/Secrets-in-Cloud.md](../Deployment/Secrets-in-Cloud.md). **CI (GitHub Actions):** API keys from Secrets; optional config (e.g. OPENAI_MODEL, LLM_PROVIDER) from Variables or defaults — see [Deployment/CI-Config-and-Rerun.md](../Deployment/CI-Config-and-Rerun.md).
+
 **When is .env loaded?** The backend loads `.env` once at startup. If you change `.env` later, either restart the server or use **Admin → Knowledge Base → “Reload .env”** (or `POST /api/admin/reload-env`) to re-read it once. See [CONFIG_AND_ENV.md](CONFIG_AND_ENV.md) for the full architecture.
 
 | Variable | Required | Description |

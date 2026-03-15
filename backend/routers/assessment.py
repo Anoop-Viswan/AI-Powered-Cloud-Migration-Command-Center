@@ -381,6 +381,13 @@ def _target_diagram_dir(assessment_id: str) -> Path:
     return root / "data" / "assessment_diagrams" / assessment_id
 
 
+class SummarizeBody(BaseModel):
+    """Optional body for summarize: clarification questions/answers (HITL) or skip to generate with current design."""
+    clarification_questions: list[str] | None = None  # Questions that were asked (so report can reflect them)
+    clarification_answers: list[str] | None = None
+    skip_clarification: bool = False  # If True, do not ask for clarifications; generate diagram anyway
+
+
 @router.post("/assessment/{assessment_id}/summarize")
 def run_summarize_step(
     assessment_id: str,
@@ -455,13 +462,6 @@ def run_summarize_step(
 class ReportUpdate(BaseModel):
     """Body for updating report (edit)."""
     report: str = ""
-
-
-class SummarizeBody(BaseModel):
-    """Optional body for summarize: clarification questions/answers (HITL) or skip to generate with current design."""
-    clarification_questions: list[str] | None = None  # Questions that were asked (so report can reflect them)
-    clarification_answers: list[str] | None = None
-    skip_clarification: bool = False  # If True, do not ask for clarifications; generate diagram anyway
 
 
 @router.post("/assessment/{assessment_id}/quality-check")
