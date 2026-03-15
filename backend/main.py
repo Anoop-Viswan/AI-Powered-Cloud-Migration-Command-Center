@@ -10,10 +10,18 @@ _root = Path(__file__).resolve().parent.parent
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 from backend.routers import admin, assessment, chat, diagnostics, search
 from backend.config import get_project_dir
+from backend.auth import (
+    is_admin_protected,
+    verify_session_token,
+    ADMIN_SESSION_COOKIE,
+)
 
 app = FastAPI(
     title="Cloud Migration Command Center – API",
@@ -37,6 +45,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class AdminAuthMiddleware(BaseHTTPMiddleware):
+    """Require valid admin session cookie for /api/admin/* except login, logout, me."""
+
+    _SKIP_PATHS = {"/api/admin/login", "/api/admin/logout", "/api/admin/me"}
+
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        if not path.startswith("/api/admin"):
+            return await call_next(request)
+        if path in self._SKIP_PATHS:
+            return await call_next(request)
+        if not is_admin_protected():
+            return await call_next(request)
+        cookie = request.cookies.get(ADMIN_SESSION_COOKIE)
+        if not cookie or not verify_session_token(cookie):
+            return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+        return await call_next(request)
+
+
+app.add_middleware(AdminAuthMiddleware)
 
 
 @app.get("/api/health")

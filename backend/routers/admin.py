@@ -1,14 +1,24 @@
-"""Admin API: config, seed, usage, manifest, assessments."""
+"""Admin API: config, seed, usage, manifest, assessments. Login/logout when admin auth is enabled."""
+import hmac
 import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, Request
+from fastapi.responses import Response
+from pydantic import BaseModel
 
 from backend.config import get_project_dir, reload_env
 from backend.services.assessment.store import AssessmentStore
 from backend.services.feature_status import get_feature_status
+from backend.auth import (
+    get_admin_credentials,
+    is_admin_protected,
+    create_session_token,
+    ADMIN_SESSION_COOKIE,
+    ADMIN_SESSION_MAX_AGE,
+)
 
 
 def get_assessment_store() -> AssessmentStore:
@@ -16,6 +26,66 @@ def get_assessment_store() -> AssessmentStore:
 
 
 router = APIRouter()
+
+
+# ─── Admin login / logout (no auth required) ─────────────────────────────────
+
+class LoginBody(BaseModel):
+    username: str = ""
+    password: str = ""
+
+
+@router.post("/login")
+def admin_login(body: LoginBody, response: Response):
+    """
+    Authenticate with ADMIN_USERNAME and ADMIN_PASSWORD from env.
+    On success sets an httpOnly session cookie and returns { "ok": true }.
+    If admin auth is not configured (env not set), returns 401.
+    """
+    if not is_admin_protected():
+        raise HTTPException(status_code=401, detail="Admin login not configured")
+    user, pw = get_admin_credentials()
+    # Constant-time compare to reduce timing leaks
+    if not (user and pw and body.username == user and _constant_time_compare(body.password, pw)):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token = create_session_token()
+    response.set_cookie(
+        key=ADMIN_SESSION_COOKIE,
+        value=token,
+        max_age=ADMIN_SESSION_MAX_AGE,
+        httponly=True,
+        secure=os.getenv("ALLOWED_ORIGINS", "").strip().lower().startswith("https"),
+        samesite="lax",
+        path="/",
+    )
+    return {"ok": True}
+
+
+def _constant_time_compare(a: str, b: str) -> bool:
+    """Constant-time string comparison."""
+    return hmac.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
+
+
+@router.post("/logout")
+def admin_logout(response: Response):
+    """Clear the admin session cookie."""
+    response.delete_cookie(key=ADMIN_SESSION_COOKIE, path="/")
+    return {"ok": True}
+
+
+@router.get("/me")
+def admin_me(request: Request):
+    """
+    Returns 200 { "ok": true } if the request has a valid admin session (for frontend auth check).
+    Returns 401 if not authenticated. When admin is not protected, returns 200.
+    """
+    if not is_admin_protected():
+        return {"ok": True}
+    from backend.auth import verify_session_token
+    cookie = request.cookies.get(ADMIN_SESSION_COOKIE)
+    if not cookie or not verify_session_token(cookie):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"ok": True}
 
 # Status file in project root (parent of backend/)
 _SEED_STATUS_PATH = Path(__file__).resolve().parent.parent.parent / ".seed_status.json"

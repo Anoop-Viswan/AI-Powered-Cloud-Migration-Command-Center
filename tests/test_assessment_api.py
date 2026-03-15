@@ -1,5 +1,6 @@
 """Integration tests for assessment API."""
 
+import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,6 +8,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
+
+# Disable admin auth for tests so admin/diagnostics endpoints respond without login
+os.environ.pop("ADMIN_USERNAME", None)
+os.environ.pop("ADMIN_PASSWORD", None)
+
 from backend.routers.admin import get_assessment_store
 from backend.routers.assessment import get_store
 from backend.services.assessment.store import AssessmentStore
@@ -40,6 +46,8 @@ VALID_PROFILE = {
 @pytest.fixture
 def client(tmp_path):
     """Test client with temp store."""
+    os.environ.pop("ADMIN_USERNAME", None)
+    os.environ.pop("ADMIN_PASSWORD", None)
     db_path = tmp_path / "api_test.db"
     store = AssessmentStore(db_path=db_path)
     app.dependency_overrides[get_store] = lambda: store
@@ -62,6 +70,8 @@ def assessment_id(client):
 @pytest.fixture
 def client_and_store(tmp_path):
     """Test client and store, for tests that need to manipulate the store directly."""
+    os.environ.pop("ADMIN_USERNAME", None)
+    os.environ.pop("ADMIN_PASSWORD", None)
     db_path = tmp_path / "api_test.db"
     store = AssessmentStore(db_path=db_path)
     app.dependency_overrides[get_store] = lambda: store
