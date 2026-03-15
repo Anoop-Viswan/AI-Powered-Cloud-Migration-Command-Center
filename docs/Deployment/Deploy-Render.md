@@ -82,6 +82,8 @@ Use the same names and values you have in `.env` locally. Mark as **Secret** in 
 | **PINECONE_PROJECT_DIR** | No | e.g. `/data` if you mount docs; optional | No |
 | **PINECONE_SPEND_LIMIT** | No | Default `10` (dollars) | No |
 | **ALLOWED_ORIGINS** | Yes for CORS | `https://<your-service-name>.onrender.com` (see below) | No |
+| **ADMIN_USERNAME** | To protect Admin | Username for Admin sign-in (e.g. `admin`). When set with ADMIN_PASSWORD, Admin area requires login. | No |
+| **ADMIN_PASSWORD** | To protect Admin | Password for Admin sign-in. Mark as **Secret** in Render. | Yes |
 | **OPENAI_TEMPERATURE** | No | Default `0.3` | No |
 | **OPENAI_MAX_TOKENS** | No | Default `4096` | No |
 | **RESEARCH_KB_MIN_SCORE** | No | Default `0.5` | No |

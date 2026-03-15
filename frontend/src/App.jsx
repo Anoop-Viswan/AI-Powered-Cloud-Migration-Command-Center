@@ -3,7 +3,9 @@ import Home from './pages/Home'
 import Chat from './pages/Chat'
 import Admin from './pages/Admin'
 import AdminAssessmentDetail from './pages/AdminAssessmentDetail'
+import AdminLogin from './pages/AdminLogin'
 import Assessment from './pages/Assessment'
+import AdminGuard from './AdminGuard'
 
 function NavLink({ to, children }) {
   const loc = useLocation()
@@ -42,8 +44,9 @@ export default function App() {
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/assessment/:id" element={<Assessment />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/assessment/:id" element={<AdminAssessmentDetail />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminGuard><Admin /></AdminGuard>} />
+          <Route path="/admin/assessment/:id" element={<AdminGuard><AdminAssessmentDetail /></AdminGuard>} />
         </Routes>
       </main>
     </div>

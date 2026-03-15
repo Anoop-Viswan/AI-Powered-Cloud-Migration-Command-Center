@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+const API_BASE = import.meta.env?.VITE_API_BASE || ''
 
 export default function Admin() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('assessments')
   const [config, setConfig] = useState(null)
   const [usage, setUsage] = useState(null)
@@ -302,6 +305,15 @@ export default function Admin() {
             className="rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-sm font-medium text-white hover:bg-white/20"
           >
             Refresh
+          </button>
+          <button
+            onClick={async () => {
+              await fetch(`${API_BASE}/api/admin/logout`, { method: 'POST', credentials: 'include' })
+              navigate('/admin/login', { replace: true })
+            }}
+            className="rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-sm font-medium text-white hover:bg-white/20"
+          >
+            Logout
           </button>
         </div>
       </header>

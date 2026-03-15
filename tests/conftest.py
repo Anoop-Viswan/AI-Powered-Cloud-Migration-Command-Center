@@ -1,5 +1,10 @@
 """Pytest fixtures: temp project dir with sample files for extractors and semantic_search."""
 
+# Disable admin auth during tests so admin/diagnostics endpoints are reachable without login
+import os
+os.environ.pop("ADMIN_USERNAME", None)
+os.environ.pop("ADMIN_PASSWORD", None)
+
 import json
 from pathlib import Path
 

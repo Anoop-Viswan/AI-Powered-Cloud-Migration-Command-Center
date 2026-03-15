@@ -8,6 +8,8 @@ Copy `.env.example` to `.env` and fill in your keys. **Do not commit `.env`** (i
 
 | Variable | Required | Description |
 |----------|----------|-------------|
+| **ADMIN_USERNAME** | When protecting Admin | Username for Admin login. When both ADMIN_USERNAME and ADMIN_PASSWORD are set, the Admin area requires sign-in. |
+| **ADMIN_PASSWORD** | When protecting Admin | Password for Admin login. Set in Render as a **Secret**. |
 | **PINECONE_API_KEY** | Yes | Pinecone API key from [app.pinecone.io](https://app.pinecone.io/) |
 | **PINECONE_PROJECT_DIR** | For search/seed | Project directory to index and search (or pass `--project-dir`) |
 | **PINECONE_SPEND_LIMIT** | No | Spend guardrail in USD (default 10). Script blocks when estimated usage reaches this. |
