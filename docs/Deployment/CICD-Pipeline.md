@@ -1,5 +1,31 @@
 # CI/CD pipeline (GitHub Actions + Render)
 
+## Main branch and interface verification (cloud-first)
+
+**Intent:** This project is meant to run mainly in the cloud (e.g. Render). **Main should hold code that works when API keys are present**—otherwise a deploy to Render can go live and then fail at runtime when Pinecone, LLM, or Tavily are missing or invalid.
+
+**Industry best practice:** One of the two approaches below.
+
+### Recommended: Verify interfaces in CI when secrets exist
+
+- **Add GitHub Secrets** for the services you use in deploy (e.g. `PINECONE_API_KEY`, `OPENAI_API_KEY`, optionally `TAVILY_API_KEY`). Use **test** or **CI-only** keys if you don’t want production keys in GitHub.
+- **Run interface checks in CI** (e.g. a job that runs `pytest tests/test_interface_connectivity.py -v -m external`, or `python scripts/verify_setup.py`) so that every PR and push to `main` is verified against real APIs.
+- **Result:** Only code that passes both unit tests and interface checks can merge to `main`. When you deploy from `main` to Render (with the same or production keys in Render env), the app is already known to work with valid config. No “green CI then deploy fails.”
+
+Optional: run the interface job only when secrets are present (e.g. `if: ${{ secrets.PINECONE_API_KEY != '' }}`) so open-source contributors without keys still get a green CI for non-external tests.
+
+### Alternative: Verify at deploy time (Render)
+
+- Keep CI as today (no secrets; external tests skipped).
+- In Render, add a **build or start command** that runs `python scripts/verify_setup.py` and **exits non-zero if any required check fails**. Render will mark the deploy as failed, so the app never starts with missing or invalid keys.
+- **Result:** Main is not “verified” in CI, but no broken config reaches a running deployment. You find misconfiguration at deploy time instead of in CI.
+
+**Summary:** For a cloud-first, “main = deploy-ready” stance, **run interface verification in CI with secrets** (recommended). If you prefer not to store any keys in GitHub, use **deploy-time verification** so Render fails fast when keys are wrong.
+
+**What we ship:** The workflow includes an optional job `interface-checks` that runs **only when** the secret `PINECONE_API_KEY` is set. Once you add that (and optionally `OPENAI_API_KEY`, `TAVILY_API_KEY`, `LANGCHAIN_API_KEY`) in GitHub → Settings → Secrets, the job runs on every PR/push and fails with the same detailed messages as `verify_setup.py` if a required interface is missing or invalid. You can then add **interface-checks** as a required status for `main` in branch protection so main stays deploy-ready.
+
+---
+
 ## Logical sequence (recommended)
 
 1. **CI first** – Add the GitHub Actions workflow so every push/PR runs tests (and frontend build). Protects `main` from broken code.
@@ -19,7 +45,7 @@ Doing CI before deploy avoids shipping a broken build and then having to fix the
   - **backend-tests:** Python 3.11, install from `requirements.txt`, run `pytest tests/ -m "not external"`. Skips interface connectivity tests (Pinecone, LLM, Tavily, Mermaid.ink) so no API keys are needed. `LANGCHAIN_TRACING_V2=false` so no LangSmith in CI.
   - **frontend-build:** Node 20, `npm ci` + `npm run build` in `frontend/` so the same steps as the Dockerfile succeed.
 - **No secrets required** for CI; tests use mocks and in-memory SQLite.
-- **Interface checks:** Run **before push** locally: `python scripts/verify_interfaces.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [INTERFACE_TESTS.md](INTERFACE_TESTS.md). Optional: add API keys as GitHub Secrets and run the same tests in CI to validate deploy env.
+- **Interface checks:** Run **before push** locally: `python scripts/verify_setup.py` or `pytest tests/test_interface_connectivity.py -v -m external`. See [Setup-and-Reference/Interface-Tests.md](../Setup-and-Reference/Interface-Tests.md). With GitHub Secrets set, the optional `interface-checks` job runs in CI (see “Main branch and interface verification” above).
 
 ### CD (Render)
 

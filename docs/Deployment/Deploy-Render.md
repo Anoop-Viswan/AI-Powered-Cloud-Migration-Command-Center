@@ -53,6 +53,8 @@ We recommend **turning on CI before the first deploy**: see [CICD_PIPELINE.md](C
 
 In the same screen, open the **Environment** section and add variables. Render injects these at **runtime** (they are not baked into the image). For secrets, use **Secret Files** or mark values as **Secret** so they are masked in the UI.
 
+**Local vs cloud:** Locally you use a `.env` file; on Render you use the dashboard env vars (no `.env` in the image). For Azure Key Vault or AWS Secrets Manager, see [Secrets-in-Cloud.md](Secrets-in-Cloud.md).
+
 Add every key your app needs. Example (adjust names to match your `.env`):
 
 | Key | Value | Secret? |
