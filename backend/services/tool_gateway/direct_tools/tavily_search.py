@@ -94,6 +94,7 @@ def tavily_search(
     if include_domains:
         body["include_domains"] = include_domains[:50]  # API limit
 
+    t0 = time.perf_counter()
     req = urllib.request.Request(
         TAVILY_SEARCH_URL,
         data=json.dumps(body).encode("utf-8"),
