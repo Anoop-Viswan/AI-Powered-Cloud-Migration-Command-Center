@@ -27,8 +27,16 @@ def reload_env() -> None:
 
 
 def get_project_dir() -> str | None:
+    """
+    Return the configured project directory path.
+    The path does NOT need to exist locally — it is used as a stable string
+    for namespace hashing in Pinecone. This allows deployed environments
+    (e.g. Render) to share the same namespace as the seeding machine without
+    requiring the physical directory to be present.
+    Seeding operations validate directory existence separately.
+    See: https://github.com/Anoop-Viswan/AI-Powered-Cloud-Migration-Command-Center/issues/5
+    """
     path = os.getenv("PINECONE_PROJECT_DIR")
     if not path:
         return None
-    path = os.path.abspath(os.path.expanduser(path))
-    return path if os.path.isdir(path) else None
+    return os.path.abspath(os.path.expanduser(path))
