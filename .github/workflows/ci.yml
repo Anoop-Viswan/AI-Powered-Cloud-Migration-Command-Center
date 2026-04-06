@@ -11,9 +11,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, develop]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, develop]
 
 # Opt into Node.js 24 for JavaScript actions (checkout, setup-node, setup-python).
 # Removes Node 20 deprecation warning; required from June 2026.
