@@ -59,7 +59,7 @@ def _fetch_png_from_mermaid_ink(mermaid_code: str) -> bytes | None:
     url = _mermaid_to_png_url(mermaid_code)
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "AssessmentReport/1.0"})
-        with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:
+        with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:  # nosec B310 - URL always https://mermaid.ink (hardcoded constant), never user-supplied
             return resp.read()
     except Exception as e:
         logger.warning("Failed to fetch diagram from mermaid.ink: %s", e)
