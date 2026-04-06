@@ -1,4 +1,4 @@
-certifi==2026.1.4
+certifi==2026.2.25
 pinecone==8.1.0
 python-dotenv==1.2.1
 pypdf==6.9.2
