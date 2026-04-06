@@ -16,4 +16,4 @@ langgraph==1.1.6
 langchain-openai==1.1.12
 langchain-core==1.2.26
 langchain-anthropic==1.4.0
-langsmith==0.7.13
+langsmith==0.7.26
