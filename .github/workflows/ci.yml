@@ -124,7 +124,7 @@ jobs:
   # Also add API key secrets (PINECONE_API_KEY, OPENAI_API_KEY, etc.) under the Secrets tab.
   interface-checks:
     runs-on: ubuntu-latest
-    if: ${{ vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' || vars.RUN_INTERFACE_CHECKS == 'True' || vars.RUN_INTERFACE_CHECKS == 'TRUE' || vars.RUN_INTERFACE_CHECKS == 'yes' || vars.RUN_INTERFACE_CHECKS == 'Yes' || vars.RUN_INTERFACE_CHECKS == 'YES' }}
+    if: ${{ github.actor != 'dependabot[bot]' && (vars.RUN_INTERFACE_CHECKS == 'true' || vars.RUN_INTERFACE_CHECKS == '1' || vars.RUN_INTERFACE_CHECKS == 'True' || vars.RUN_INTERFACE_CHECKS == 'TRUE' || vars.RUN_INTERFACE_CHECKS == 'yes' || vars.RUN_INTERFACE_CHECKS == 'Yes' || vars.RUN_INTERFACE_CHECKS == 'YES') }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
