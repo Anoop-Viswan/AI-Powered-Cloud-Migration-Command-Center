@@ -1,0 +1,132 @@
+name: Daily Security Scan
+
+on:
+  schedule:
+    # 8am EST = 13:00 UTC
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  daily-scan:
+    name: Daily Security Scan
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit bandit
+
+      # ── pip-audit ──────────────────────────────────────────────────────────
+      - name: pip-audit — Python CVE scan
+        id: pip_audit
+        run: |
+          pip-audit -r requirements.txt --format=json -o pip-audit-results.json
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Check pip-audit exit code
+        if: steps.pip_audit.outcome == 'failure'
+        run: echo "PIP_AUDIT_FAILED=true" >> $GITHUB_ENV
+
+      # ── bandit ─────────────────────────────────────────────────────────────
+      - name: bandit — Python SAST
+        id: bandit
+        run: |
+          bandit -ll -ii -r backend/ -x backend/__pycache__ -f json -o bandit-results.json
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Check bandit exit code
+        if: steps.bandit.outcome == 'failure'
+        run: echo "BANDIT_FAILED=true" >> $GITHUB_ENV
+
+      # ── npm audit ──────────────────────────────────────────────────────────
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: npm audit — JS CVE scan
+        id: npm_audit
+        working-directory: frontend
+        run: |
+          npm audit --audit-level=high --json > ../npm-audit-results.json
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Check npm audit exit code
+        if: steps.npm_audit.outcome == 'failure'
+        run: echo "NPM_AUDIT_FAILED=true" >> $GITHUB_ENV
+
+      # ── Create GitHub Issue if any scanner found findings ──────────────────
+      - name: Create GitHub Issue on findings
+        if: env.PIP_AUDIT_FAILED == 'true' || env.BANDIT_FAILED == 'true' || env.NPM_AUDIT_FAILED == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SCAN_DATE=$(date +%Y-%m-%d)
+          BODY="## Daily Security Scan — ${SCAN_DATE}\n\n"
+          BODY+="One or more scanners reported findings. Review results below.\n\n"
+
+          if [ "$PIP_AUDIT_FAILED" = "true" ]; then
+            BODY+="### pip-audit (Python CVEs)\n\`\`\`\n"
+            BODY+="$(cat pip-audit-results.json 2>/dev/null | python3 -c \
+              "import sys,json; d=json.load(sys.stdin); \
+              [print(f\"{v['name']}=={v['version']}: {', '.join(vuln['id'] for vuln in v['vulns'])}\") \
+              for v in d.get('dependencies',[]) if v.get('vulns')]" 2>/dev/null || echo 'See workflow logs')\n"
+            BODY+="\`\`\`\n\n"
+          fi
+
+          if [ "$BANDIT_FAILED" = "true" ]; then
+            BODY+="### bandit (Python SAST)\n\`\`\`\n"
+            BODY+="$(cat bandit-results.json 2>/dev/null | python3 -c \
+              "import sys,json; d=json.load(sys.stdin); \
+              [print(f\"{r['filename']}:{r['line_number']} [{r['issue_severity']}/{r['issue_confidence']}] {r['issue_text']}\") \
+              for r in d.get('results',[])]" 2>/dev/null || echo 'See workflow logs')\n"
+            BODY+="\`\`\`\n\n"
+          fi
+
+          if [ "$NPM_AUDIT_FAILED" = "true" ]; then
+            BODY+="### npm audit (JS CVEs)\n\`\`\`\n"
+            BODY+="$(cat npm-audit-results.json 2>/dev/null | python3 -c \
+              "import sys,json; d=json.load(sys.stdin); \
+              vulns=d.get('vulnerabilities',{}); \
+              [print(f\"{k}: {v.get('severity','?')} — {v.get('title',v.get('via',[{}])[0] if isinstance(v.get('via',[{}])[0],str) else v.get('via',[{}])[0].get('title','?') if v.get('via') else '?')}\") \
+              for k,v in vulns.items() if v.get('severity') in ('high','critical')]" 2>/dev/null || echo 'See workflow logs')\n"
+            BODY+="\`\`\`\n\n"
+          fi
+
+          BODY+="**Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
+          BODY+="To fix: create branch \`bugfix/security-<cve-id>\` → fix → PR to \`develop\`."
+
+          gh issue create \
+            --title "[SECURITY] Daily scan findings — ${SCAN_DATE}" \
+            --body "$(printf '%b' "$BODY")" \
+            --label "security" \
+            --assignee "Anoop-Viswan"
+
+      - name: Fail job if any scanner found findings
+        if: env.PIP_AUDIT_FAILED == 'true' || env.BANDIT_FAILED == 'true' || env.NPM_AUDIT_FAILED == 'true'
+        run: |
+          echo "Security findings detected. GitHub Issue created. Review and fix."
+          exit 1

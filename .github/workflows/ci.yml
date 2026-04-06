@@ -75,6 +75,45 @@ jobs:
           npm run build
           echo "=== Frontend build finished ==="
 
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit bandit
+
+      - name: pip-audit — Python CVE scan (hard block on critical/high)
+        run: pip-audit -r requirements.txt
+
+      - name: bandit — Python SAST (hard block on medium+ severity/confidence)
+        run: bandit -ll -ii -r backend/ -x backend/__pycache__
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: npm audit — JS CVE scan (hard block on high+)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
   # Optional: run ALL interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) in CI.
   # When this job runs, it runs verify_setup.py which checks every interface, not just Pinecone.
   #
