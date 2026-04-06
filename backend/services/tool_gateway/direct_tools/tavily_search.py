@@ -105,7 +105,7 @@ def tavily_search(
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:
+        with urllib.request.urlopen(req, timeout=30, context=_ssl_context()) as resp:  # nosec B310 - URL is TAVILY_SEARCH_URL constant (https://api.tavily.com/search), never user-supplied
             data = json.loads(resp.read().decode("utf-8"))
         try:
             from backend.services.diagnostics.recorder import record_tool_call
