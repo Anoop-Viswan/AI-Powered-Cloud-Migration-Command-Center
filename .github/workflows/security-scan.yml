@@ -119,6 +119,11 @@ jobs:
           BODY+="**Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
           BODY+="To fix: create branch \`bugfix/security-<cve-id>\` → fix → PR to \`develop\`."
 
+          gh label create "security" \
+            --color "e11d48" \
+            --description "Security vulnerability or scan finding" \
+            --force 2>/dev/null || true
+
           gh issue create \
             --title "[SECURITY] Daily scan findings — ${SCAN_DATE}" \
             --body "$(printf '%b' "$BODY")" \
