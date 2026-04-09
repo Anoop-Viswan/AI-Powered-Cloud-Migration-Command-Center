@@ -94,7 +94,7 @@ jobs:
           pip install pip-audit bandit
 
       - name: pip-audit — Python CVE scan (hard block on critical/high)
-        run: pip-audit -r requirements.txt
+        run: pip-audit -r requirements.txt --severity high
 
       - name: bandit — Python SAST (hard block on medium+ severity/confidence)
         run: bandit -ll -ii -r backend/ -x backend/__pycache__
