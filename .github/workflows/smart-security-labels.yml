@@ -1,0 +1,55 @@
+name: Smart Security Labels
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label-security-vulns:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Check for CVE in PR body
+        id: check_cve
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if echo "$PR_BODY" | grep -iE "CVE-[0-9]{4}-[0-9]{4,}|vulnerability|security.*fix" > /dev/null; then
+            echo "has_cve=true" >> $GITHUB_OUTPUT
+            echo "✅ Found security vulnerability mention in PR"
+          else
+            echo "has_cve=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No security vulnerability found (routine dependency update)"
+          fi
+
+      - name: Apply security label (if CVE found)
+        if: steps.check_cve.outputs.has_cve == 'true'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: security
+
+      - name: Remove security label (if no CVE)
+        if: steps.check_cve.outputs.has_cve == 'false'
+        uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: security
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const hasCVE = '${{ steps.check_cve.outputs.has_cve }}' === 'true';
+            const message = hasCVE
+              ? '🔴 **Security Alert**: This PR addresses a known CVE. Prioritize review & merge.'
+              : '✅ **Routine Update**: No CVE found. This is a routine dependency bump — safe to batch with other updates.';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
