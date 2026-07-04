@@ -12,9 +12,9 @@ References: https://mermaid.ink (render Mermaid to image via URL).
 
 import base64
 import logging
+import re
 import ssl
 import urllib.request
-import uuid
 from pathlib import Path
 
 import certifi
@@ -24,11 +24,14 @@ logger = logging.getLogger(__name__)
 # Base URL for mermaid.ink image rendering (no auth required)
 MERMAID_INK_IMG = "https://mermaid.ink/img"
 
+_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
 
 def _validate_assessment_id(assessment_id: str) -> None:
     """assessment_id is always a server-generated UUID (see store.create()); reject anything else
     before it's used to build a filesystem path, to prevent path traversal."""
-    uuid.UUID(assessment_id)
+    if not _UUID_RE.match(assessment_id):
+        raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
 
 
 def _diagrams_dir(assessment_id: str) -> Path:

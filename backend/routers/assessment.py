@@ -4,7 +4,6 @@ import json
 import re
 import queue
 import threading
-import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -65,12 +64,13 @@ def _uploads_dir() -> Path:
     return root / "data" / "assessment_uploads"
 
 
+_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
+
 def _validate_assessment_id(assessment_id: str) -> None:
     """assessment_id is always a server-generated UUID (see store.create()); reject anything else
     before it's used to build a filesystem path, to prevent path traversal."""
-    try:
-        uuid.UUID(assessment_id)
-    except ValueError:
+    if not _UUID_RE.match(assessment_id):
         raise HTTPException(status_code=400, detail="Invalid assessment_id")
 
 
