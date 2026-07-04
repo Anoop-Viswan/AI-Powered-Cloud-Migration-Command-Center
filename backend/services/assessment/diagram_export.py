@@ -12,7 +12,7 @@ References: https://mermaid.ink (render Mermaid to image via URL).
 
 import base64
 import logging
-import re
+import os
 import ssl
 import urllib.request
 from pathlib import Path
@@ -24,30 +24,29 @@ logger = logging.getLogger(__name__)
 # Base URL for mermaid.ink image rendering (no auth required)
 MERMAID_INK_IMG = "https://mermaid.ink/img"
 
-_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
-
-def _validate_assessment_id(assessment_id: str) -> None:
-    """assessment_id is always a server-generated UUID (see store.create()); reject anything else
-    before it's used to build a filesystem path, to prevent path traversal."""
-    if not _UUID_RE.match(assessment_id):
-        raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
+def _diagrams_root() -> Path:
+    return Path(__file__).resolve().parent.parent.parent.parent / "data" / "assessment_diagrams"
 
 
 def _diagrams_dir(assessment_id: str) -> Path:
     """Directory for generated diagram artifacts: .mmd and .png."""
-    _validate_assessment_id(assessment_id)
-    root = Path(__file__).resolve().parent.parent.parent.parent
-    d = root / "data" / "assessment_diagrams" / assessment_id
+    root = _diagrams_root()
+    root_norm = os.path.normpath(str(root))
+    d = root / assessment_id
+    if os.path.normpath(str(d)) != root_norm and not os.path.normpath(str(d)).startswith(root_norm + os.sep):
+        raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def clear_diagram_artifacts(assessment_id: str) -> None:
     """Remove generated diagram folder for this assessment (e.g. when re-running research)."""
-    _validate_assessment_id(assessment_id)
-    root = Path(__file__).resolve().parent.parent.parent.parent
-    d = root / "data" / "assessment_diagrams" / assessment_id
+    root = _diagrams_root()
+    root_norm = os.path.normpath(str(root))
+    d = root / assessment_id
+    if os.path.normpath(str(d)) != root_norm and not os.path.normpath(str(d)).startswith(root_norm + os.sep):
+        raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
     if d.exists():
         import shutil
         shutil.rmtree(d, ignore_errors=True)
