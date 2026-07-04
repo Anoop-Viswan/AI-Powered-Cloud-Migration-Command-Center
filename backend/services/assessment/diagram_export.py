@@ -14,6 +14,7 @@ import base64
 import logging
 import ssl
 import urllib.request
+import uuid
 from pathlib import Path
 
 import certifi
@@ -24,8 +25,15 @@ logger = logging.getLogger(__name__)
 MERMAID_INK_IMG = "https://mermaid.ink/img"
 
 
+def _validate_assessment_id(assessment_id: str) -> None:
+    """assessment_id is always a server-generated UUID (see store.create()); reject anything else
+    before it's used to build a filesystem path, to prevent path traversal."""
+    uuid.UUID(assessment_id)
+
+
 def _diagrams_dir(assessment_id: str) -> Path:
     """Directory for generated diagram artifacts: .mmd and .png."""
+    _validate_assessment_id(assessment_id)
     root = Path(__file__).resolve().parent.parent.parent.parent
     d = root / "data" / "assessment_diagrams" / assessment_id
     d.mkdir(parents=True, exist_ok=True)
@@ -34,6 +42,7 @@ def _diagrams_dir(assessment_id: str) -> Path:
 
 def clear_diagram_artifacts(assessment_id: str) -> None:
     """Remove generated diagram folder for this assessment (e.g. when re-running research)."""
+    _validate_assessment_id(assessment_id)
     root = Path(__file__).resolve().parent.parent.parent.parent
     d = root / "data" / "assessment_diagrams" / assessment_id
     if d.exists():

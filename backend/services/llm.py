@@ -1,7 +1,10 @@
 """LLM service: summarize search results into an answer. Uses LLM provider abstraction (OpenAI, Anthropic, Azure)."""
+import logging
 import os
 
 from langchain_core.messages import HumanMessage, SystemMessage
+
+logger = logging.getLogger(__name__)
 
 from backend.services.diagnostics.recorder import invoke_llm
 from backend.services.llm_provider import get_llm
@@ -51,5 +54,6 @@ def summarize_with_llm(
         ]
         response = invoke_llm(llm, messages, "chat", assessment_id=None)
         return response.content if hasattr(response, "content") else str(response) or "No response generated."
-    except Exception as e:
-        return f"LLM error: {str(e)}"
+    except Exception:
+        logger.exception("LLM call failed during summarize_with_llm")
+        return "LLM error: the request could not be completed. Check server logs for details."
