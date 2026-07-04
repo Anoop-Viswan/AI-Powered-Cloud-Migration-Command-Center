@@ -124,11 +124,18 @@ jobs:
             --description "Security vulnerability or scan finding" \
             --force 2>/dev/null || true
 
-          gh issue create \
-            --title "[SECURITY] Daily scan findings — ${SCAN_DATE}" \
-            --body "$(printf '%b' "$BODY")" \
-            --label "security" \
-            --assignee "Anoop-Viswan"
+          # Reuse the existing open tracking issue instead of spawning a new one every day.
+          EXISTING=$(gh issue list --label "security" --state open --search "in:title \"[SECURITY] Daily scan findings\"" --json number --jq '.[0].number')
+
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$(printf '%b' "$BODY")"
+          else
+            gh issue create \
+              --title "[SECURITY] Daily scan findings" \
+              --body "$(printf '%b' "$BODY")" \
+              --label "security" \
+              --assignee "Anoop-Viswan"
+          fi
 
       - name: Fail job if any scanner found findings
         if: env.PIP_AUDIT_FAILED == 'true' || env.BANDIT_FAILED == 'true' || env.NPM_AUDIT_FAILED == 'true'
