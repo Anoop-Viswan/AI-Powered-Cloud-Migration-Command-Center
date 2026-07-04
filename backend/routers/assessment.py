@@ -4,6 +4,7 @@ import json
 import re
 import queue
 import threading
+import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -62,6 +63,15 @@ def _user_friendly_error_detail(exc: Exception) -> str:
 def _uploads_dir() -> Path:
     root = Path(__file__).resolve().parent.parent.parent
     return root / "data" / "assessment_uploads"
+
+
+def _validate_assessment_id(assessment_id: str) -> None:
+    """assessment_id is always a server-generated UUID (see store.create()); reject anything else
+    before it's used to build a filesystem path, to prevent path traversal."""
+    try:
+        uuid.UUID(assessment_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid assessment_id")
 
 
 def get_store() -> AssessmentStore:
@@ -187,6 +197,7 @@ async def upload_diagram(
     store: AssessmentStore = Depends(get_store),
 ):
     """Upload architecture diagram (current or future state). Returns path to store in profile."""
+    _validate_assessment_id(assessment_id)
     if diagram_type not in ALLOWED_DIAGRAM_TYPES:
         raise HTTPException(status_code=400, detail="type must be 'current' or 'future'")
     if not store.get(assessment_id):
@@ -208,6 +219,7 @@ async def upload_diagram(
 @router.get("/assessment/{assessment_id}/diagram/{diagram_type}")
 def get_diagram(assessment_id: str, diagram_type: str):
     """Serve uploaded architecture diagram (current or future)."""
+    _validate_assessment_id(assessment_id)
     if diagram_type not in ALLOWED_DIAGRAM_TYPES:
         raise HTTPException(status_code=404, detail="Not found")
     from fastapi.responses import FileResponse
@@ -225,6 +237,7 @@ def get_target_diagram(
     format: str = Query("png", description="png (image) or mmd (editable Mermaid source)"),
 ):
     """Serve generated target-state architecture diagram: PNG image or editable .mmd file. Generated when you run Generate report."""
+    _validate_assessment_id(assessment_id)
     from fastapi.responses import FileResponse
     dir_path = _target_diagram_dir(assessment_id)
     if format and format.lower() == "mmd":
