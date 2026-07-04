@@ -206,9 +206,9 @@ async def upload_diagram(
     ext = Path(file.filename or "").suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Allowed: PNG, JPG, WEBP")
-    uploads_root = str(_uploads_dir())
+    uploads_root = os.path.normpath(str(_uploads_dir())) + os.sep
     upload_dir_str = os.path.normpath(os.path.join(uploads_root, assessment_id))
-    if not (upload_dir_str == uploads_root or upload_dir_str.startswith(uploads_root + os.sep)):
+    if not upload_dir_str.startswith(uploads_root):
         raise HTTPException(status_code=400, detail="Invalid assessment_id")
     upload_dir = Path(upload_dir_str)
     upload_dir.mkdir(parents=True, exist_ok=True)
@@ -228,9 +228,9 @@ def get_diagram(assessment_id: str, diagram_type: str):
     if diagram_type not in ALLOWED_DIAGRAM_TYPES:
         raise HTTPException(status_code=404, detail="Not found")
     from fastapi.responses import FileResponse
-    uploads_root = str(_uploads_dir())
+    uploads_root = os.path.normpath(str(_uploads_dir())) + os.sep
     upload_dir_str = os.path.normpath(os.path.join(uploads_root, assessment_id))
-    if not (upload_dir_str == uploads_root or upload_dir_str.startswith(uploads_root + os.sep)):
+    if not upload_dir_str.startswith(uploads_root):
         raise HTTPException(status_code=404, detail="Not found")
     upload_dir = Path(upload_dir_str)
     for ext in ALLOWED_EXTENSIONS:
@@ -248,9 +248,9 @@ def get_target_diagram(
     """Serve generated target-state architecture diagram: PNG image or editable .mmd file. Generated when you run Generate report."""
     _validate_assessment_id(assessment_id)
     from fastapi.responses import FileResponse
-    diagrams_root = str(_target_diagrams_root())
+    diagrams_root = os.path.normpath(str(_target_diagrams_root())) + os.sep
     dir_path_str = os.path.normpath(os.path.join(diagrams_root, assessment_id))
-    if not (dir_path_str == diagrams_root or dir_path_str.startswith(diagrams_root + os.sep)):
+    if not dir_path_str.startswith(diagrams_root):
         raise HTTPException(status_code=404, detail="Target diagram not found. Generate a report first.")
     dir_path = Path(dir_path_str)
     if format and format.lower() == "mmd":
