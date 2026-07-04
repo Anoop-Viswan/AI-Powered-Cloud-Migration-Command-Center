@@ -13,9 +13,9 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 def _diagram_png_path(assessment_id: str) -> Path | None:
     """Path to generated target architecture PNG, if it exists."""
     root = Path(__file__).resolve().parent.parent.parent.parent
-    diagrams_root = str(root / "data" / "assessment_diagrams")
+    diagrams_root = os.path.normpath(str(root / "data" / "assessment_diagrams")) + os.sep
     p_str = os.path.normpath(os.path.join(diagrams_root, assessment_id, "target_architecture.png"))
-    if not (p_str == diagrams_root or p_str.startswith(diagrams_root + os.sep)):
+    if not p_str.startswith(diagrams_root):
         return None
     p = Path(p_str)
     return p if p.exists() else None

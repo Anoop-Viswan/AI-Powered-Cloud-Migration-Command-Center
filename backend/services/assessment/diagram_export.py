@@ -31,9 +31,9 @@ def _diagrams_root() -> Path:
 
 def _diagrams_dir(assessment_id: str) -> Path:
     """Directory for generated diagram artifacts: .mmd and .png."""
-    root = str(_diagrams_root())
+    root = os.path.normpath(str(_diagrams_root())) + os.sep
     d_str = os.path.normpath(os.path.join(root, assessment_id))
-    if not (d_str == root or d_str.startswith(root + os.sep)):
+    if not d_str.startswith(root):
         raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
     d = Path(d_str)
     d.mkdir(parents=True, exist_ok=True)
@@ -42,9 +42,9 @@ def _diagrams_dir(assessment_id: str) -> Path:
 
 def clear_diagram_artifacts(assessment_id: str) -> None:
     """Remove generated diagram folder for this assessment (e.g. when re-running research)."""
-    root = str(_diagrams_root())
+    root = os.path.normpath(str(_diagrams_root())) + os.sep
     d_str = os.path.normpath(os.path.join(root, assessment_id))
-    if not (d_str == root or d_str.startswith(root + os.sep)):
+    if not d_str.startswith(root):
         raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
     d = Path(d_str)
     if d.exists():
