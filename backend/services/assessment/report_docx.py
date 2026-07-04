@@ -1,5 +1,6 @@
 """Convert assessment report (markdown or plain text) to DOCX for download."""
 
+import os
 import re
 from io import BytesIO
 from pathlib import Path
@@ -8,15 +9,15 @@ from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-
 
 def _diagram_png_path(assessment_id: str) -> Path | None:
     """Path to generated target architecture PNG, if it exists."""
-    if not _UUID_RE.match(assessment_id):
-        return None
     root = Path(__file__).resolve().parent.parent.parent.parent
+    diagrams_root = os.path.normpath(str(root / "data" / "assessment_diagrams"))
     p = root / "data" / "assessment_diagrams" / assessment_id / "target_architecture.png"
+    p_dir_norm = os.path.normpath(str(p.parent))
+    if p_dir_norm != diagrams_root and not p_dir_norm.startswith(diagrams_root + os.sep):
+        return None
     return p if p.exists() else None
 
 
