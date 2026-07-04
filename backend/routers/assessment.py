@@ -212,7 +212,10 @@ async def upload_diagram(
         raise HTTPException(status_code=400, detail="Invalid assessment_id")
     upload_dir = Path(upload_dir_str)
     upload_dir.mkdir(parents=True, exist_ok=True)
-    dest = upload_dir / f"{diagram_type}{ext}"
+    dest_str = os.path.normpath(os.path.join(upload_dir_str, f"{diagram_type}{ext}"))
+    if not dest_str.startswith(uploads_root):
+        raise HTTPException(status_code=400, detail="Invalid assessment_id")
+    dest = Path(dest_str)
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:  # 10 MB
         raise HTTPException(status_code=400, detail="File too large (max 10 MB)")
@@ -232,9 +235,11 @@ def get_diagram(assessment_id: str, diagram_type: str):
     upload_dir_str = os.path.normpath(os.path.join(uploads_root, assessment_id))
     if not upload_dir_str.startswith(uploads_root):
         raise HTTPException(status_code=404, detail="Not found")
-    upload_dir = Path(upload_dir_str)
     for ext in ALLOWED_EXTENSIONS:
-        p = upload_dir / f"{diagram_type}{ext}"
+        p_str = os.path.normpath(os.path.join(upload_dir_str, f"{diagram_type}{ext}"))
+        if not p_str.startswith(uploads_root):
+            continue
+        p = Path(p_str)
         if p.exists():
             return FileResponse(p, media_type=f"image/{ext[1:]}")
     raise HTTPException(status_code=404, detail="Diagram not found")
