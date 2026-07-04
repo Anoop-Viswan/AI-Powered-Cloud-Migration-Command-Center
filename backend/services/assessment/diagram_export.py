@@ -31,22 +31,22 @@ def _diagrams_root() -> Path:
 
 def _diagrams_dir(assessment_id: str) -> Path:
     """Directory for generated diagram artifacts: .mmd and .png."""
-    root = _diagrams_root()
-    root_norm = os.path.normpath(str(root))
-    d = root / assessment_id
-    if os.path.normpath(str(d)) != root_norm and not os.path.normpath(str(d)).startswith(root_norm + os.sep):
+    root = str(_diagrams_root())
+    d_str = os.path.normpath(os.path.join(root, assessment_id))
+    if not (d_str == root or d_str.startswith(root + os.sep)):
         raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
+    d = Path(d_str)
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def clear_diagram_artifacts(assessment_id: str) -> None:
     """Remove generated diagram folder for this assessment (e.g. when re-running research)."""
-    root = _diagrams_root()
-    root_norm = os.path.normpath(str(root))
-    d = root / assessment_id
-    if os.path.normpath(str(d)) != root_norm and not os.path.normpath(str(d)).startswith(root_norm + os.sep):
+    root = str(_diagrams_root())
+    d_str = os.path.normpath(os.path.join(root, assessment_id))
+    if not (d_str == root or d_str.startswith(root + os.sep)):
         raise ValueError(f"Invalid assessment_id: {assessment_id!r}")
+    d = Path(d_str)
     if d.exists():
         import shutil
         shutil.rmtree(d, ignore_errors=True)
