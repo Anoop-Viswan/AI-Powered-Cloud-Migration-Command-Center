@@ -206,10 +206,11 @@ async def upload_diagram(
     ext = Path(file.filename or "").suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Allowed: PNG, JPG, WEBP")
-    uploads_root = os.path.normpath(str(_uploads_dir()))
-    upload_dir = _uploads_dir() / assessment_id
-    if os.path.normpath(str(upload_dir)) != uploads_root and not os.path.normpath(str(upload_dir)).startswith(uploads_root + os.sep):
+    uploads_root = str(_uploads_dir())
+    upload_dir_str = os.path.normpath(os.path.join(uploads_root, assessment_id))
+    if not (upload_dir_str == uploads_root or upload_dir_str.startswith(uploads_root + os.sep)):
         raise HTTPException(status_code=400, detail="Invalid assessment_id")
+    upload_dir = Path(upload_dir_str)
     upload_dir.mkdir(parents=True, exist_ok=True)
     dest = upload_dir / f"{diagram_type}{ext}"
     content = await file.read()
@@ -227,10 +228,11 @@ def get_diagram(assessment_id: str, diagram_type: str):
     if diagram_type not in ALLOWED_DIAGRAM_TYPES:
         raise HTTPException(status_code=404, detail="Not found")
     from fastapi.responses import FileResponse
-    uploads_root = os.path.normpath(str(_uploads_dir()))
-    upload_dir = _uploads_dir() / assessment_id
-    if os.path.normpath(str(upload_dir)) != uploads_root and not os.path.normpath(str(upload_dir)).startswith(uploads_root + os.sep):
+    uploads_root = str(_uploads_dir())
+    upload_dir_str = os.path.normpath(os.path.join(uploads_root, assessment_id))
+    if not (upload_dir_str == uploads_root or upload_dir_str.startswith(uploads_root + os.sep)):
         raise HTTPException(status_code=404, detail="Not found")
+    upload_dir = Path(upload_dir_str)
     for ext in ALLOWED_EXTENSIONS:
         p = upload_dir / f"{diagram_type}{ext}"
         if p.exists():
@@ -246,10 +248,11 @@ def get_target_diagram(
     """Serve generated target-state architecture diagram: PNG image or editable .mmd file. Generated when you run Generate report."""
     _validate_assessment_id(assessment_id)
     from fastapi.responses import FileResponse
-    diagrams_root = os.path.normpath(str(_target_diagrams_root()))
-    dir_path = _target_diagram_dir(assessment_id)
-    if os.path.normpath(str(dir_path)) != diagrams_root and not os.path.normpath(str(dir_path)).startswith(diagrams_root + os.sep):
+    diagrams_root = str(_target_diagrams_root())
+    dir_path_str = os.path.normpath(os.path.join(diagrams_root, assessment_id))
+    if not (dir_path_str == diagrams_root or dir_path_str.startswith(diagrams_root + os.sep)):
         raise HTTPException(status_code=404, detail="Target diagram not found. Generate a report first.")
+    dir_path = Path(dir_path_str)
     if format and format.lower() == "mmd":
         p = dir_path / "target_architecture.mmd"
         if not p.exists():
