@@ -1,0 +1,42 @@
+name: Dependabot PR labels
+
+# Tag Dependabot PRs accurately:
+#   - Genuine, alert-driven security updates (Dependabot exposes a GHSA id for
+#     these) get the "security" label.
+#   - Plain scheduled version bumps stay "dependencies" only and never carry
+#     the "security" label.
+# This replaces the old blanket "security" label in dependabot.yml, which was
+# tagging every version bump as a security issue.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag real security updates
+        if: steps.meta.outputs.ghsa-id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.html_url }}
+        run: gh pr edit "$PR" --add-label security
+
+      - name: Keep version-only bumps free of the security label
+        if: steps.meta.outputs.ghsa-id == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.html_url }}
+        run: gh pr edit "$PR" --remove-label security || true
