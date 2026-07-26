@@ -38,3 +38,14 @@ updates:
         patterns:
           - "vite"
           - "@vitejs/*"
+    ignore:
+      # react-router-dom: pinned to v6. Every currently-published version carries
+      # at least one advisory, and none are reachable in our declarative
+      # BrowserRouter SPA (no SSR, no RSC/framework mode):
+      #   - v6.x: open redirect (moderate) — below our --audit-level=high gate.
+      #   - v7.12.0–8.2.0: RSC Mode CSRF Bypass (HIGH) — would FAIL the daily scan.
+      # The open-redirect fix (>7.17.0) only exists inside the RSC-CSRF range, so
+      # there is no clean version yet. Staying on v6 keeps the scan green.
+      # Revisit when a react-router release clears BOTH advisories (>8.2.0).
+      - dependency-name: "react-router-dom"
+        update-types: ["version-update:semver-major"]
