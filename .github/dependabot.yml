@@ -9,9 +9,12 @@ updates:
       time: "09:00"
       timezone: "America/New_York"
     open-pull-requests-limit: 5
+    # Only "dependencies" here. The "security" label is applied automatically
+    # by .github/workflows/dependabot-labels.yml — but ONLY to genuine
+    # alert-driven security updates (those with a GHSA id), never to plain
+    # version bumps. This keeps the "security" tag meaningful.
     labels:
       - "dependencies"
-      - "security"
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -28,9 +31,12 @@ updates:
       time: "09:00"
       timezone: "America/New_York"
     open-pull-requests-limit: 5
+    # Only "dependencies" here. The "security" label is applied automatically
+    # by .github/workflows/dependabot-labels.yml — but ONLY to genuine
+    # alert-driven security updates (those with a GHSA id), never to plain
+    # version bumps. This keeps the "security" tag meaningful.
     labels:
       - "dependencies"
-      - "security"
     commit-message:
       prefix: "chore(deps)"
     groups:
