@@ -21,6 +21,16 @@ updates:
       langchain-ecosystem:
         patterns:
           - "langchain-*"
+    ignore:
+      # Park major upgrades that are breaking changes / carry runtime risk for
+      # this app. Minor & patch updates (including security) still flow. Revisit
+      # these deliberately, not via auto-PR. Reversible: delete the entry.
+      # pinecone v9 = major API rewrite; our KB layer targets the v8 client.
+      - dependency-name: "pinecone"
+        update-types: ["version-update:semver-major"]
+      # langchain majors move fast and break agent/LangGraph wiring.
+      - dependency-name: "langchain-*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/frontend"
@@ -54,4 +64,13 @@ updates:
       # there is no clean version yet. Staying on v6 keeps the scan green.
       # Revisit when a react-router release clears BOTH advisories (>8.2.0).
       - dependency-name: "react-router-dom"
+        update-types: ["version-update:semver-major"]
+      # Park frontend framework majors — breaking, and CI confirmed they don't
+      # build against our code yet. Minor/patch (incl. security) still flow.
+      # Revisit deliberately: react 19, tailwind v4 are real migrations.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tailwindcss"
         update-types: ["version-update:semver-major"]
