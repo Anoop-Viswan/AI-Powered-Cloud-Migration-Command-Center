@@ -18,9 +18,15 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     groups:
+      # These pin each other's versions (langgraph -> langchain-core,
+      # langchain-openai -> openai, langchain-core -> langsmith). Bumped as
+      # separate PRs they fail pip resolution (see #162/#164), so bump together.
       langchain-ecosystem:
         patterns:
           - "langchain-*"
+          - "langgraph"
+          - "langsmith"
+          - "openai"
     ignore:
       # Park major upgrades that are breaking changes / carry runtime risk for
       # this app. Minor & patch updates (including security) still flow. Revisit
