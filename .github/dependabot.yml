@@ -1,4 +1,5 @@
 version: 2
+# Dependency policy: security fixes only. See open-pull-requests-limit below.
 updates:
   - package-ecosystem: "pip"
     directory: "/"
@@ -8,7 +9,11 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/New_York"
-    open-pull-requests-limit: 5
+    # POLICY: security-only. Limit 0 turns OFF routine version-bump PRs.
+    # Security-update PRs (alert-driven) are NOT affected by this limit and
+    # still open automatically. Bump without a CVE only when we need a
+    # feature or fix, as a deliberate manual change.
+    open-pull-requests-limit: 0
     # Only "dependencies" here. The "security" label is applied automatically
     # by .github/workflows/dependabot-labels.yml — but ONLY to genuine
     # alert-driven security updates (those with a GHSA id), never to plain
@@ -46,7 +51,11 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/New_York"
-    open-pull-requests-limit: 5
+    # POLICY: security-only. Limit 0 turns OFF routine version-bump PRs.
+    # Security-update PRs (alert-driven) are NOT affected by this limit and
+    # still open automatically. Bump without a CVE only when we need a
+    # feature or fix, as a deliberate manual change.
+    open-pull-requests-limit: 0
     # Only "dependencies" here. The "security" label is applied automatically
     # by .github/workflows/dependabot-labels.yml — but ONLY to genuine
     # alert-driven security updates (those with a GHSA id), never to plain

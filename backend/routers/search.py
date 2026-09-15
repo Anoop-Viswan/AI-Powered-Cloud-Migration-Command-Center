@@ -32,6 +32,8 @@ def _get_search_deps():
 
 @router.post("/search")
 def search(body: SearchRequest):
+    from backend.semantic_search import search_knowledge_base
+
     index, namespace = _get_search_deps()
     results = search_knowledge_base(
         index, namespace, body.query,
