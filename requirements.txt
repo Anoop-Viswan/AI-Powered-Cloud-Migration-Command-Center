@@ -11,9 +11,9 @@ pytest-asyncio==1.4.0
 fastapi==0.140.1
 uvicorn[standard]==0.51.0
 python-multipart==0.0.32
-openai==2.48.0
-langgraph==1.2.9
-langchain-openai==1.4.1
-langchain-core==1.5.1
-langchain-anthropic==1.5.2
-langsmith==0.10.10
+openai==3.13.0
+langgraph==1.2.11
+langchain-openai==1.6.2
+langchain-core==1.6.3
+langchain-anthropic==1.7.2
+langsmith==0.12.4
