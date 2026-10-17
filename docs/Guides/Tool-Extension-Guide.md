@@ -96,6 +96,8 @@ No MCP or UTC required; the agent just calls the gateway.
 
 ## Part B: Adding tools via MCP
 
+For a manual research workflow using an external MCP client today, see [Research migration documentation with Parallel Search MCP](Parallel-Research-Guide.md). The gateway registration examples below are pseudocode, not implemented configuration options.
+
 Use this when the tool is provided by an **MCP server** (e.g. a community Tavily MCP server, or your own server that exposes Teams/WhatsApp/email).
 
 ### Step 1: Run or connect to an MCP server
