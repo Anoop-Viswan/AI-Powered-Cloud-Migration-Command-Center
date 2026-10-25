@@ -5,6 +5,28 @@ import pytest
 from backend.document_extractors import extract_content, PROSE_EXTENSIONS, EXTRACTOR_EXTENSIONS
 
 
+def _write_text_pdf(path, pages: list[str]) -> None:
+    """Write a real PDF with one Helvetica text line per page (built with pypdf itself)."""
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    font = writer._add_object(DictionaryObject({
+        NameObject("/Type"): NameObject("/Font"),
+        NameObject("/Subtype"): NameObject("/Type1"),
+        NameObject("/BaseFont"): NameObject("/Helvetica"),
+    }))
+    for text in pages:
+        page = writer.add_blank_page(width=612, height=792)
+        page[NameObject("/Resources")] = DictionaryObject({
+            NameObject("/Font"): DictionaryObject({NameObject("/F1"): font}),
+        })
+        stream = DecodedStreamObject()
+        stream.set_data(f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET".encode("latin-1"))
+        page[NameObject("/Contents")] = writer._add_object(stream)
+    writer.write(str(path))
+
+
 class TestExtractPlainText:
     """Plain text extensions: .txt, .md, etc."""
 
@@ -53,6 +75,47 @@ class TestExtractPDF:
         result = extract_content(str(sample_pdf_path), ".pdf")
         # Blank page has no extractable text -> None
         assert result is None or (result[0] == [] and result[1] == "prose")
+
+    # The tests below exercise pypdf's real text extraction, so a pypdf upgrade
+    # (security bumps are frequent) that changes parsing behaviour fails here.
+
+    def test_text_pdf_extracts_text(self, tmp_path):
+        path = tmp_path / "text.pdf"
+        _write_text_pdf(path, ["OrderService migrates Oracle to Azure SQL"])
+        result = extract_content(str(path), ".pdf")
+        assert result is not None
+        chunks, content_type = result
+        assert content_type == "prose"
+        assert len(chunks) == 1
+        assert "OrderService migrates Oracle to Azure SQL" in chunks[0]
+
+    def test_multi_page_small_pdf_is_merged_in_page_order(self, tmp_path):
+        path = tmp_path / "pages.pdf"
+        _write_text_pdf(path, ["First page alpha", "Second page beta", "Third page gamma"])
+        chunks, _ = extract_content(str(path), ".pdf")
+        assert len(chunks) == 1
+        text = chunks[0]
+        assert text.index("alpha") < text.index("beta") < text.index("gamma")
+
+    def test_large_pdf_is_chunked(self, tmp_path):
+        from backend.document_extractors import MAX_CONTENT_CHARS
+
+        path = tmp_path / "large.pdf"
+        page_text = "migration " * 400  # ~4000 chars per page
+        _write_text_pdf(path, [page_text] * 4)
+        chunks, _ = extract_content(str(path), ".pdf")
+        assert len(chunks) > 1
+        assert all(len(c) <= MAX_CONTENT_CHARS for c in chunks)
+
+    @pytest.mark.parametrize("payload", [
+        b"not a pdf at all",
+        b"%PDF-1.7\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",  # truncated, no xref/trailer
+        b"",
+    ])
+    def test_corrupt_pdf_returns_none_without_raising(self, tmp_path, payload):
+        path = tmp_path / "corrupt.pdf"
+        path.write_bytes(payload)
+        assert extract_content(str(path), ".pdf") is None
 
 
 class TestExtractDOCX:
