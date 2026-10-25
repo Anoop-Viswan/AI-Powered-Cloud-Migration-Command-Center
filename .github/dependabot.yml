@@ -23,6 +23,13 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     groups:
+      # One PR per ecosystem for ALL open security alerts. CI's security scan
+      # audits the whole repo, so a single-package fix PR stays red while any
+      # other CVE is open. Grouping lets the fix land in one go.
+      security-fixes:
+        applies-to: security-updates
+        patterns:
+          - "*"
       # These pin each other's versions (langgraph -> langchain-core,
       # langchain-openai -> openai, langchain-core -> langsmith). Bumped as
       # separate PRs they fail pip resolution (see #162/#164), so bump together.
@@ -65,6 +72,13 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     groups:
+      # One PR per ecosystem for ALL open security alerts. CI's security scan
+      # audits the whole repo, so a single-package fix PR stays red while any
+      # other CVE is open. Grouping lets the fix land in one go.
+      security-fixes:
+        applies-to: security-updates
+        patterns:
+          - "*"
       vite-ecosystem:
         patterns:
           - "vite"
