@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
       - name: Install dependencies
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version-file: "frontend/.nvmrc"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -86,7 +86,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version-file: ".python-version"
 
       - name: Install security tools
         run: |
@@ -94,7 +94,7 @@ jobs:
           pip install pip-audit bandit
 
       - name: pip-audit — Python CVE scan (hard block on critical/high)
-        run: pip-audit -r requirements.txt
+        run: pip-audit -r requirements.txt --require-hashes --disable-pip
 
       - name: bandit — Python SAST (hard block on medium+ severity/confidence)
         run: bandit -ll -ii -r backend/ -x backend/__pycache__
@@ -102,7 +102,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version-file: "frontend/.nvmrc"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -113,6 +113,25 @@ jobs:
       - name: npm audit — JS CVE scan (hard block on high+)
         working-directory: frontend
         run: npm audit --audit-level=high
+
+  # Build the REAL production image (what Render deploys) and boot it.
+  # Catches Dockerfile / lockfile / base-image breakage before it reaches a deploy.
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t cloud-migration:ci .
+
+      - name: Boot container and check /api/health
+        run: |
+          docker run -d --name app -p 7860:7860 -e LANGCHAIN_TRACING_V2=false cloud-migration:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:7860/api/health; then echo; echo "healthy after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          echo "container never became healthy"; docker logs app; exit 1
 
   # Optional: run ALL interface checks (Pinecone, LLM, LangSmith, Tavily, Mermaid.ink) in CI.
   # When this job runs, it runs verify_setup.py which checks every interface, not just Pinecone.
@@ -133,7 +152,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
       - name: Install dependencies
         run: |

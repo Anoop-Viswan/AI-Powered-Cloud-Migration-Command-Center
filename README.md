@@ -12,9 +12,9 @@ Follow **[docs/Setup-and-Reference/One-Time-Setup.md](docs/Setup-and-Reference/O
 ```bash
 git clone <this-repo>
 cd <repo-dir>
-python3 -m venv venv
+python3.11 -m venv venv     # Python version: see .python-version (matches prod Docker)
 source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+pip install --require-hashes -r requirements.txt   # hashed lockfile; edit requirements.in, not this
 cp .env.example .env
 # Edit .env: PINECONE_API_KEY, PINECONE_PROJECT_DIR (optional), OPENAI_API_KEY (or other LLM), etc.
 python scripts/verify_setup.py
