@@ -27,6 +27,27 @@ def _write_text_pdf(path, pages: list[str]) -> None:
     writer.write(str(path))
 
 
+def _page(contents: bytes) -> bytes:
+    return b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents " + contents + b" >>"
+
+
+def _build_raw_pdf(extra_objects: dict, xref_header: bytes | None = None) -> bytes:
+    """Hand-assemble a PDF (catalog 1, pages 2, plus extra objects), bypassing pypdf's writer
+    so we can produce structures a well-behaved writer never would."""
+    objs = {1: b"<< /Type /Catalog /Pages 2 0 R >>", 2: b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>"}
+    objs.update(extra_objects)
+    out, offsets = b"%PDF-1.7\n", {}
+    for num, body in sorted(objs.items()):
+        offsets[num] = len(out)
+        out += f"{num} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref_at, size = len(out), max(objs) + 1
+    out += b"xref\n" + (xref_header or f"0 {size}".encode()) + b"\n0000000000 65535 f \n"
+    for num in range(1, size):
+        out += f"{offsets.get(num, 0):010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {size} /Root 1 0 R >>\nstartxref\n{xref_at}\n%%EOF\n".encode()
+    return out
+
+
 class TestExtractPlainText:
     """Plain text extensions: .txt, .md, etc."""
 
@@ -116,6 +137,26 @@ class TestExtractPDF:
         path = tmp_path / "corrupt.pdf"
         path.write_bytes(payload)
         assert extract_content(str(path), ".pdf") is None
+
+    # Hostile-input guards. Uploaded PDFs are our main attack surface, and pypdf
+    # keeps shipping DoS fixes (long runtimes / memory blow-ups on crafted files).
+    # These are NOT reproductions of specific CVEs (the advisories publish no PoCs).
+    # They pin the extractor contract that matters to us across every pypdf bump:
+    # hostile structure -> returns quickly, never raises.
+    @pytest.mark.parametrize("name, objects, xref_header", [
+        ("repeated_missing_refs", {3: _page(b"[" + b"999 0 R " * 50000 + b"]")}, None),
+        ("huge_xref_header", {3: _page(b"[]")}, b"0 2000000000"),
+        ("deeply_nested_arrays", {3: _page(b"[]"), 4: b"[" * 5000 + b"]" * 5000}, None),
+    ])
+    def test_hostile_pdf_is_bounded_and_does_not_raise(self, tmp_path, name, objects, xref_header):
+        import time
+
+        path = tmp_path / f"{name}.pdf"
+        path.write_bytes(_build_raw_pdf(objects, xref_header))
+        start = time.perf_counter()
+        result = extract_content(str(path), ".pdf")  # must not raise
+        assert time.perf_counter() - start < 5.0, f"{name} took too long (possible DoS regression)"
+        assert result is None or isinstance(result, tuple)
 
 
 class TestExtractDOCX:
