@@ -2,7 +2,7 @@
 # Use for Hugging Face Spaces (Docker Space) or any container cloud (AWS ECS, GCP Cloud Run, etc.)
 
 # ---- Frontend ----
-FROM node:20-alpine AS frontend
+FROM node:22-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 # App code (semantic_search, document_extractors, usage_tracker live under backend/)
 COPY backend/ ./backend/

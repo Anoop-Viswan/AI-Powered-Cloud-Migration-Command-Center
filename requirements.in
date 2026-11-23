@@ -1,0 +1,24 @@
+# Direct dependencies: the ONLY file to edit by hand.
+# requirements.txt is the generated lockfile (every transitive dep pinned + hashed).
+# Regenerate after editing this file (Python 3.11 = prod, see .python-version):
+#   uvx --python 3.11 --from pip-tools pip-compile --generate-hashes --allow-unsafe --strip-extras requirements.in -o requirements.txt
+# Policy: bump only for a CVE/advisory or a needed feature, never "to stay current".
+certifi==2026.10.19
+pinecone==8.1.2
+python-dotenv==1.2.2
+pypdf==6.21.4
+python-docx==1.2.0
+openpyxl==3.1.5
+xlrd==2.0.2
+python-pptx==1.0.2
+pytest==9.1.1
+pytest-asyncio==1.4.0
+fastapi==0.140.1
+uvicorn[standard]==0.51.0
+python-multipart==0.0.32
+openai==2.48.0
+langgraph==1.2.14
+langchain-openai==1.4.1
+langchain-core==1.5.1
+langchain-anthropic==1.5.2
+langsmith==0.10.10
