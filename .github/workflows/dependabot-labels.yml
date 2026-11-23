@@ -1,12 +1,18 @@
 name: Dependabot PR labels
 
 # Tag Dependabot PRs accurately:
-#   - Genuine, alert-driven security updates (Dependabot exposes a GHSA id for
-#     these) get the "security" label.
-#   - Plain scheduled version bumps stay "dependencies" only and never carry
-#     the "security" label.
-# This replaces the old blanket "security" label in dependabot.yml, which was
-# tagging every version bump as a security issue.
+#   - Genuine security fixes (the bump moves a package off a version that a
+#     GitHub Security Advisory affects) get the "security" label.
+#   - Plain version bumps stay "dependencies" only and never carry it.
+#
+# Nov 2026 fix: this used to key off fetch-metadata's `ghsa-id`, which is
+# ALWAYS empty unless `alert-lookup: true` + a PAT that can read Dependabot
+# alerts (GITHUB_TOKEN can't). So every PR, including real CVE fixes
+# (#204 pypdf, #208 langgraph), had "security" removed. We now ask the public
+# Advisory DB directly: see .github/scripts/dependabot_security_label.py.
+#
+# Safety: pull_request_target runs with a write token, so we check out the
+# BASE branch only (the default) and never execute code from the PR head.
 
 on:
   pull_request_target:
@@ -27,15 +33,31 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check out base branch (trusted script only)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Classify against GitHub Advisory Database
+        id: classify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPDATED_DEPS_JSON: ${{ steps.meta.outputs.updated-dependencies-json }}
+        run: python3 .github/scripts/dependabot_security_label.py
+
       - name: Tag real security updates
-        if: steps.meta.outputs.ghsa-id != ''
+        if: steps.classify.outputs.verdict == 'security'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.html_url }}
-        run: gh pr edit "$PR" --add-label security
+          GHSA: ${{ steps.classify.outputs.ghsa_ids }}
+        run: |
+          echo "Fixes: $GHSA"
+          gh pr edit "$PR" --add-label security
 
       - name: Keep version-only bumps free of the security label
-        if: steps.meta.outputs.ghsa-id == ''
+        if: steps.classify.outputs.verdict == 'not-security'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.html_url }}
